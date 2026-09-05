@@ -1,0 +1,120 @@
+/* Daybreak — css/tokens.css — Harbor Dawn design tokens: the single source of colour, type, space and shape. */
+
+/* ---------------------------------------------------------------------------
+   Harbor Dawn.
+   Sunrise over King Harbour: deep plum night, warm terracotta, sand, low gold.
+   Light-first on purpose. No indigo, no neon, no pure black, no pink.
+
+   Rules that live here:
+     - Semantic tokens (--bg, --surface, --text, --accent, ...) are what
+       components use. The raw ramps (--sand-*, --ink-*, --clay-*, ...) exist so
+       the semantics have somewhere to point.
+     - Every colour is defined on bare :root. Nothing is defined ONLY inside a
+       media query, so a value always exists no matter what the OS reports.
+     - Dark is opt-in-or-follow-the-OS. It re-points the ramps, so the semantic
+       tokens above them update for free.
+     - Fonts: no CDN, no webfont file, no network. --font-display degrades to
+       Georgia, which is still a serif and still differentiates from IronPulse.
+--------------------------------------------------------------------------- */
+
+:root{
+  color-scheme: light;
+
+  /* surfaces */
+  --sand-50:#FBF7F4; --sand-100:#F4EDE7; --sand-200:#E7DBD1; --sand-300:#D8C7B9;
+
+  /* ink */
+  --ink-900:#241C26; --ink-700:#3D3140; --ink-500:#6B5F6E; --ink-300:#9C93A0;
+
+  /* accents */
+  --clay-500:#C4674F; --clay-600:#A85440; --clay-100:#F5E2DB;
+  --plum-700:#4A2E52; --plum-500:#6B4675; --plum-100:#EDE3EF;
+  --gold-500:#D99A32; --gold-100:#FAEFD9;
+  --sage-500:#6E8B72; --sage-100:#E3EDE4;
+  --rose-500:#B3556B; --rose-100:#F6E4E8;
+
+  /* semantic — use these in components, not raw ramps */
+  --bg:var(--sand-50); --surface:#FFFFFF; --surface-2:var(--sand-100);
+  --border:var(--sand-200); --text:var(--ink-900); --text-dim:var(--ink-500);
+  --accent:var(--clay-500); --accent-press:var(--clay-600); --accent-soft:var(--clay-100);
+  --brand:var(--plum-700); --win:var(--gold-500); --calm:var(--sage-500); --signal:var(--rose-500);
+
+  /* type */
+  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-ui:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+  --fs-hero:2.25rem; --fs-h1:1.75rem; --fs-h2:1.3rem; --fs-body:1.0625rem;
+  --fs-sm:0.9375rem; --fs-xs:0.8125rem; --fs-num:1.5rem;
+
+  /* space / shape */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
+  --r-sm:10px; --r:14px; --r-lg:20px; --r-full:999px;
+  --shadow:0 1px 3px rgba(36,28,38,.06),0 4px 12px rgba(36,28,38,.05);
+  --shadow-lg:0 8px 28px rgba(36,28,38,.12);
+  --tap:56px;                 /* minimum touch target */
+  --nav-h:68px; --header-h:56px;
+  --ease:cubic-bezier(.2,.8,.3,1);
+}
+
+/* ---------------------------------------------------------------------------
+   Dark — follows the OS, unless the profile has explicitly chosen light.
+   The listed overrides are verbatim from the contract. The ramp values beneath
+   them are re-pointed too, so a component that reaches for --accent-soft or
+   --sand-100 in dark gets a dark answer instead of a blown-out cream block.
+--------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+
+    /* surfaces */
+    --sand-50:#171018; --sand-100:#221926; --sand-200:#2B2030; --sand-300:#3A2D3F;
+
+    /* ink — the ramp inverts: 900 is now the brightest */
+    --ink-900:#F6EFEA; --ink-700:#D3C7CE; --ink-500:#A99DAE; --ink-300:#7C7185;
+
+    /* accents lifted ~8% luminance; the -100 tints become dark tints */
+    --clay-500:#D77A61; --clay-600:#C26A52; --clay-100:#3A2620;
+    --plum-700:#B69BBE; --plum-500:#9C81A6; --plum-100:#302339;
+    --gold-500:#E5AC4C; --gold-100:#3A2E1B;
+    --sage-500:#87A48B; --sage-100:#253022;
+    --rose-500:#C76B81; --rose-100:#3A222A;
+
+    /* semantic */
+    --bg:#171018; --surface:#221926; --surface-2:#2B2030; --border:#3A2D3F;
+    --text:#F6EFEA; --text-dim:#A99DAE;
+
+    /* shadow needs real black on a dark ground or it disappears */
+    --shadow:0 1px 3px rgba(0,0,0,.44),0 4px 12px rgba(0,0,0,.34);
+    --shadow-lg:0 10px 32px rgba(0,0,0,.5);
+  }
+}
+
+:root[data-theme="dark"]{
+  color-scheme: dark;
+
+  /* surfaces */
+  --sand-50:#171018; --sand-100:#221926; --sand-200:#2B2030; --sand-300:#3A2D3F;
+
+  /* ink — the ramp inverts: 900 is now the brightest */
+  --ink-900:#F6EFEA; --ink-700:#D3C7CE; --ink-500:#A99DAE; --ink-300:#7C7185;
+
+  /* accents lifted ~8% luminance; the -100 tints become dark tints */
+  --clay-500:#D77A61; --clay-600:#C26A52; --clay-100:#3A2620;
+  --plum-700:#B69BBE; --plum-500:#9C81A6; --plum-100:#302339;
+  --gold-500:#E5AC4C; --gold-100:#3A2E1B;
+  --sage-500:#87A48B; --sage-100:#253022;
+  --rose-500:#C76B81; --rose-100:#3A222A;
+
+  /* semantic */
+  --bg:#171018; --surface:#221926; --surface-2:#2B2030; --border:#3A2D3F;
+  --text:#F6EFEA; --text-dim:#A99DAE;
+
+  /* shadow needs real black on a dark ground or it disappears */
+  --shadow:0 1px 3px rgba(0,0,0,.44),0 4px 12px rgba(0,0,0,.34);
+  --shadow-lg:0 10px 32px rgba(0,0,0,.5);
+}
+
+/* Explicit light wins over the OS in both directions. */
+:root[data-theme="light"]{
+  color-scheme: light;
+}

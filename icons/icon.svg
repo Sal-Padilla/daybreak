@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Daybreak">
+  <rect width="512" height="512" rx="112" fill="#FBF7F4"/>
+  <!-- horizon -->
+  <rect x="72" y="332" width="368" height="26" rx="13" fill="#4A2E52"/>
+  <!-- the sun, rising -->
+  <path d="M256 128a132 132 0 0 1 132 132H124A132 132 0 0 1 256 128Z" fill="#C4674F"/>
+  <!-- first light -->
+  <rect x="120" y="288" width="128" height="22" rx="11" fill="#D99A32"/>
+  <rect x="272" y="288" width="120" height="22" rx="11" fill="#D99A32"/>
+  <rect x="152" y="392" width="208" height="20" rx="10" fill="#E7DBD1"/>
+</svg>

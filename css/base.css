@@ -1,0 +1,449 @@
+/* Daybreak — css/base.css — reset, type scale, a11y, app-shell layout and layout utilities. */
+
+/* ---------------------------------------------------------------------------
+   Depends on css/tokens.css being linked BEFORE this file in index.html.
+   No @import here on purpose: an @import blocks rendering on a second request,
+   and the shell already links all three stylesheets.
+
+   Sizing decisions come from the contract:
+     - body text >= 17px (--fs-body is 1.0625rem = 17px at the 16px root)
+     - every interactive element >= --tap (56px) in its smallest dimension
+     - primary actions live in the bottom third, so the shell keeps the bottom
+       of the screen clear of chrome except the nav
+--------------------------------------------------------------------------- */
+
+/* ── reset ───────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after{ box-sizing: border-box; }
+
+*{ margin: 0; }
+
+html{
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;   /* no grey flash on tap */
+}
+
+/* A real app shell: the body is exactly one viewport tall, .app-content is the
+   only thing that scrolls, and the header and nav never move. `overflow` is
+   deliberately left visible so that if a screen is ever rendered outside
+   .app-content it still overflows to the viewport and stays reachable. */
+body{
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Some shells wrap everything in a single element. Let it pass the flex column
+   through so .app-content still gets its height. */
+#app, .app-shell{
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+img, svg, video, canvas{ display: block; max-width: 100%; }
+/* No global svg{fill:none} — charts.js fills bars and body-map regions. */
+
+button, input, select, textarea{
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button{
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;                  /* kills the 300ms tap delay */
+}
+
+/* Contract: every interactive element >= --tap in its smallest dimension.
+   Checkboxes and radios are excluded — components.css gives them their own
+   generous hit area via a wrapping label. */
+button,
+[role="button"],
+select,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]){
+  min-height: var(--tap);
+}
+
+button, [role="button"]{ min-width: var(--tap); }
+
+textarea{ min-height: calc(var(--tap) * 1.5); resize: vertical; }
+
+/* A bare, unclassed field still has to look deliberate — onboarding and Me
+   render plain inputs. components.css can restyle on top of this. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+textarea{
+  max-width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-body);
+  transition: border-color .16s var(--ease), background-color .16s var(--ease);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{ border-color: var(--accent); }
+
+::placeholder{ color: var(--text-dim); opacity: 1; }
+
+label{ display: inline-block; }
+
+/* Digits must not jitter while she is changing a weight mid-set. */
+input[type="number"],
+input[inputmode="numeric"],
+input[inputmode="decimal"]{ font-variant-numeric: tabular-nums; }
+
+a{ color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:not([class]){ text-decoration: underline; }
+
+ul, ol{ padding-left: var(--sp-5); }
+ul[class], ol[class]{ list-style: none; padding-left: 0; }
+
+hr{
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin-block: var(--sp-5);
+}
+
+table{ border-collapse: collapse; width: 100%; }
+
+[hidden]{ display: none !important; }
+
+::selection{ background: var(--accent-soft); color: var(--text); }
+
+/* ── type scale ──────────────────────────────────────────────────────────── */
+
+/* Serif for the statements, sans for the interface. This one choice does more
+   differentiation work than the whole palette. */
+.display,
+.hero,
+h1, h2{
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+h3, h4, h5, h6{
+  font-family: var(--font-ui);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+.hero{ font-size: var(--fs-hero); }
+h1, .h1{ font-size: var(--fs-h1); }
+h2, .h2{ font-size: var(--fs-h2); }
+h3{ font-size: var(--fs-h2); }
+h4, h5, h6{ font-size: var(--fs-body); }
+
+.body{ font-size: var(--fs-body); line-height: 1.5; }
+.sm{ font-size: var(--fs-sm); line-height: 1.45; }
+.xs{ font-size: var(--fs-xs); line-height: 1.4; }
+
+/* Eyebrow / section label — small caps-ish, calm, never shouty. */
+.label{
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+p{ text-wrap: pretty; }
+
+strong, b{ font-weight: 600; }
+
+/* Numerals. .num is safe anywhere — it only fixes the digit widths.
+   .num-lg is the set/weight readout size from the type scale. */
+.num{
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.num-lg{
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  font-size: var(--fs-num);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* ── focus ───────────────────────────────────────────────────────────────── */
+
+:focus{ outline: none; }
+
+:focus-visible{
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Keyboard users still get a ring inside the nav, where outline-offset would
+   clip against the fixed edge. */
+.bottom-nav :focus-visible{ outline-offset: -3px; }
+
+/* ── app shell ───────────────────────────────────────────────────────────── */
+
+.app-header{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-inline: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header .app-title,
+.app-header h1{
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin: 0;
+  color: var(--text);
+}
+
+/* Anything after the title in the header pushes to the trailing edge. */
+.app-header .header-actions{ margin-left: auto; display: flex; align-items: center; gap: var(--sp-2); }
+
+.app-content{
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  /* generous whitespace, and enough room at the bottom that the fixed nav
+     never covers the last card or a primary action */
+  padding: var(--sp-5) var(--sp-5)
+           calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + var(--sp-6));
+}
+
+@media (max-width: 359px){
+  .app-content{ padding-inline: var(--sp-4); }
+}
+
+.bottom-nav{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-inline: max(var(--sp-2), env(safe-area-inset-left, 0px));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+/* Five tabs: Today · Train · Week · Shape · Me. Capped so the group stays
+   centred and thumb-sized on a tablet instead of stretching to the edges. */
+.bottom-nav > *,
+.bottom-nav .nav-item{
+  flex: 1 1 0;
+  min-width: var(--tap);
+  max-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  height: var(--nav-h);
+  padding: var(--sp-2) var(--sp-1);
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .16s var(--ease);
+}
+
+.bottom-nav .nav-icon,
+.bottom-nav svg{
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.bottom-nav .nav-label{
+  font-size: var(--fs-xs);
+  letter-spacing: 0.01em;
+}
+
+/* Active tab — every reasonable way the shell might mark it. */
+.bottom-nav .active,
+.bottom-nav .is-active,
+.bottom-nav [aria-current="page"],
+.bottom-nav [aria-current="true"],
+.bottom-nav [aria-selected="true"],
+.bottom-nav [data-active="true"]{
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── motion ──────────────────────────────────────────────────────────────── */
+
+a, button, [role="button"], [data-action]{
+  transition:
+    background-color .16s var(--ease),
+    border-color .16s var(--ease),
+    color .16s var(--ease),
+    opacity .16s var(--ease),
+    transform .16s var(--ease);
+}
+
+button:active,
+[role="button"]:active{ transform: scale(.985); }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  button:active,
+  [role="button"]:active{ transform: none; }
+}
+
+/* ── utilities ───────────────────────────────────────────────────────────── */
+
+.row{ display: flex; flex-direction: row; align-items: center; }
+.col{ display: flex; flex-direction: column; }
+
+/* Default vertical rhythm between cards and blocks. */
+.stack{ display: flex; flex-direction: column; gap: var(--sp-4); }
+.stack-lg{ display: flex; flex-direction: column; gap: var(--sp-5); }
+
+.gap-0{ gap: 0; }
+.gap-1{ gap: var(--sp-1); }
+.gap-2{ gap: var(--sp-2); }
+.gap-3{ gap: var(--sp-3); }
+.gap-4{ gap: var(--sp-4); }
+.gap-5{ gap: var(--sp-5); }
+.gap-6{ gap: var(--sp-6); }
+.gap-7{ gap: var(--sp-7); }
+
+/* .center on its own centres text; on a flex container it also centres the
+   children, so it reads the same either way. */
+.center{ text-align: center; }
+.row.center{ justify-content: center; }
+.col.center, .stack.center{ align-items: center; }
+
+.between{ justify-content: space-between; }
+.end{ justify-content: flex-end; }
+.baseline{ align-items: baseline; }
+.start{ align-items: flex-start; }
+.wrap{ flex-wrap: wrap; }
+.grow{ flex: 1 1 auto; min-width: 0; }
+.shrink-0{ flex: 0 0 auto; }
+.full{ width: 100%; }
+
+.muted{ color: var(--text-dim); }
+.dim{ color: var(--text-dim); }
+.accent{ color: var(--accent); }
+.brand{ color: var(--brand); }
+.win{ color: var(--win); }
+.calm{ color: var(--calm); }
+.signal{ color: var(--signal); }
+
+.mt-0{ margin-top: 0; }
+.mt-1{ margin-top: var(--sp-1); }
+.mt-2{ margin-top: var(--sp-2); }
+.mt-3{ margin-top: var(--sp-3); }
+.mt-4{ margin-top: var(--sp-4); }
+.mt-5{ margin-top: var(--sp-5); }
+.mt-6{ margin-top: var(--sp-6); }
+
+.mb-0{ margin-bottom: 0; }
+.mb-2{ margin-bottom: var(--sp-2); }
+.mb-4{ margin-bottom: var(--sp-4); }
+.mb-5{ margin-bottom: var(--sp-5); }
+
+.nowrap{ white-space: nowrap; }
+.truncate{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+.sr-only{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Wide content — a table, a chart, a long row of chips — scrolls inside its own
+   box rather than pushing the page sideways. */
+.scroll-x{
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── desktop nicety ──────────────────────────────────────────────────────── */
+
+@media (min-width: 700px){
+  .app-header{
+    justify-content: flex-start;
+    padding-inline: max(var(--sp-5), env(safe-area-inset-left, 0px));
+  }
+}
+
+@media (hover: hover) and (pointer: fine){
+  .bottom-nav .nav-item:hover{ color: var(--text); }
+  .bottom-nav .active:hover,
+  .bottom-nav .is-active:hover,
+  .bottom-nav [aria-current="page"]:hover{ color: var(--accent-press); }
+}

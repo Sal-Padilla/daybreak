@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- No maximum-scale / user-scalable=no: blocking zoom fails people who need it,
+       and this app is aimed at eyes that may not have reading glasses on at 5:30am. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FBF7F4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171018" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Strength, shape and early mornings — a training app built for women 30–55.">
+  <meta name="color-scheme" content="light dark">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Daybreak">
+
+  <title>Daybreak</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+
+  <link rel="stylesheet" href="./css/tokens.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/screens.css">
+</head>
+<body>
+  <div id="app">
+    <header class="app-header" id="app-header">
+      <span class="app-wordmark">Daybreak</span>
+    </header>
+
+    <main class="app-content" id="content" tabindex="-1">
+      <div class="boot">
+        <p class="muted">Starting up…</p>
+      </div>
+    </main>
+
+    <nav class="bottom-nav" id="nav" aria-label="Sections">
+      <button type="button" class="nav-tab is-active" data-tab="today" aria-current="page">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v3M4.9 6.5l2.1 2.1M19.1 6.5l-2.1 2.1M2.5 15.5h19M6.5 15.5a5.5 5.5 0 0 1 11 0"/>
+          <path d="M4 19.5h16"/>
+        </svg>
+        <span class="nav-label">Today</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="train">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>
+        </svg>
+        <span class="nav-label">Train</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="week">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="15" rx="2.5"/>
+          <path d="M8 3.5v3M16 3.5v3M3.5 10h17"/>
+        </svg>
+        <span class="nav-label">Week</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="shape">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/>
+          <path d="M8.5 9h7l1 5h-2l-.5 6h-3l-.5-6h-2Z"/>
+        </svg>
+        <span class="nav-label">Shape</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="me">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 4a3.6 3.6 0 1 1 0 7.2A3.6 3.6 0 0 1 12 4Z"/>
+          <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/>
+        </svg>
+        <span class="nav-label">Me</span>
+      </button>
+    </nav>
+  </div>
+
+  <noscript>
+    <div style="padding:24px;font:17px/1.5 system-ui,sans-serif">
+      <h1>Daybreak needs JavaScript</h1>
+      <p>Everything runs on your phone — there is no server to fall back to. Turn JavaScript on
+         and reload.</p>
+    </div>
+  </noscript>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
