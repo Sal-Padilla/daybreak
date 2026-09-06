@@ -1,4 +1,4 @@
-# Daybreak — v0.3
+# Daybreak — v0.4
 
 **Live: https://sal-padilla.github.io/daybreak/**
 
@@ -27,8 +27,20 @@ does not appear, open DevTools → Application → Service Workers → Unregiste
 
 ## Put it on a phone
 
-1. Open **https://sal-padilla.github.io/daybreak/** in Safari (iPhone) or Chrome (Android).
-2. Share → **Add to Home Screen**.
+There is nothing to download and no app store. The link is the app.
+
+**https://sal-padilla.github.io/daybreak/**
+
+It opens as an ordinary web page and works fully that way. Installing just gives it a home
+screen icon and removes the browser chrome.
+
+**iPhone — must be Safari.** Chrome and Firefox on iOS cannot add web apps to the home screen.
+Open the link in Safari, tap the Share button in the bottom toolbar, scroll down, tap
+**Add to Home Screen**. The app shows a hint pointing at the right button, because Safari
+offers no prompt of its own.
+
+**Android — Chrome.** A banner appears with an **Install** button. If it has been dismissed,
+use the ⋮ menu → **Install app** (or **Add to Home screen**).
 
 That is the whole install. No sign-up, no account, no app store. Anyone you send the link to
 can do the same, and their data stays on their own phone — nothing is shared and nothing
@@ -36,6 +48,12 @@ reaches a server.
 
 Deploying an update is `git push`; Pages serves `main` from the repository root. Every path in
 the app is relative, which is what lets it run from the `/daybreak/` subpath at all.
+
+**One thing to know when testing.** The service worker is stale-while-revalidate: a device that
+already has the app serves the version it has, fetches the new one behind it, and shows the new
+version on the *next* open. So after a deploy, expect to open the app twice before a change
+appears. That is deliberate — it is what makes it launch instantly and work with no signal in
+the weight room — but it looks like a failed deploy if you are not expecting it.
 
 ---
 
