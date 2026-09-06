@@ -299,14 +299,24 @@ week carries it first, and if the pelvic-floor answer is `sometimes` or `often` 
 from "3 × 8 box jumps or pogo hops" to "low landings — 3 × 8 pogo hops or step-downs, exhaling
 on the effort".
 
-**An honest note on the Stack.** Because stacking costs 10 and a clear morning costs nothing, the
-scheduler prefers class-free mornings whenever there are enough of them. Verified behaviour with
-a three-day programme: with zero, one or two weekday classes, no stacking happens at all — the
-three lifts go on the free mornings. With four weekday classes, two days stack. With five, three
-do. The Stack is therefore the *fallback* for a crowded week rather than the default, which is
-sound programming but is not quite what the README implies. Note also that `dayType` is set to
-`'stack'` for **any** day carrying a class, including days with no lift block at all — on those
-the app writes "X is your training this morning — nothing lifts well before it."
+**An honest note on the Stack.** Stacking costs 10 in the layout scorer and a clear morning costs
+nothing, so the scheduler takes a free morning when one is genuinely cheaper. But it does stack
+readily, and from a single class. Verified with a three-day programme on the week of 7 Sep 2026:
+
+| Classes configured | Result |
+|---|---|
+| none | Mon/Wed/Fri solo, no stacking — R0 |
+| Core & More **Thursday** (a rest day) | lifts stay Mon/Wed/Fri; Thursday is class-only |
+| Core & More **Monday** (a lift day) | **Monday stacks** — Glutes & Hamstrings *short* at 05:30, class at 06:30 |
+| Mat Pilates Tue + Core & More Thu | lifts stay Mon/Wed/Fri; both class days are class-only |
+| four weekday classes | four days stack, two of them with a lift block |
+
+So the deciding factor is not *how many* classes there are but *where they land*: a class on a
+morning the programme already wants produces a real Stack, and a class on a rest day does not
+displace anything. The README's framing holds. What is fair criticism is that `dayType` is set to
+`'stack'` for **any** day carrying a class, including days with no lift block at all, which makes
+the field a poor thing to branch on — `week.js` correctly checks `day.session` as well, and
+anything new reading `dayType` should do the same.
 
 Also verified: with HIIT on Monday 06:00, BODYPUMP Wednesday and Cycle Friday, the scheduler
 puts Lower A on Tuesday, Upper on Wednesday (stacked before BODYPUMP, short block) and Lower B
@@ -1074,3 +1084,31 @@ against generated rather than observed training.
 
 *Daybreak gives general fitness guidance. It is not medical advice and does not diagnose or treat
 anything.*
+
+---
+
+## Appendix — audit follow-up (6 Sep 2026)
+
+The findings in this document were acted on the same day. Fixed in `22a56b9`:
+
+- **`session:overrides` was written and never read.** The Week screen's "Move it" button
+  toasted "Moved. Your week is clear." and the week rebuilt unchanged. `buildWeek` now accepts
+  an overrides map and the layout scorer gives a hand-moved session a decisive bonus.
+  Verified: `{lower-b: 3}` moves Legs & Bone from Friday to Thursday.
+- **That button appeared even when there was nowhere to move to.** A saturated week returns
+  `toDayIndex: null`; the button is now hidden in that case and replaced with a line explaining
+  there is no clear morning.
+- **`warn:dismissed` stored warning codes**, so one dismissal silenced that warning class for
+  every future week. Dismissals are now scoped to the week.
+- **`programWeek` never incremented.** Now derived from `startedOn` via `currentProgramWeek()`.
+  "of N" is shown only for a programme that ends — the ongoing programme's `weeks` is its deload
+  cycle, so "Week 14 of 6" was nonsense.
+- **`rest:default` was stored and never read.** The session runner now falls back to it.
+
+Not fixed, deliberately: the strength-standards coverage gap. Aliasing `machine-hip-thrust` onto
+`barbell-hip-thrust` would give a wrong number — a machine stack is not the same load as a bar —
+and `standards.js` was built to return `null` rather than invent one. Real ratios or nothing.
+
+Still open from this document: `cycleLog` and `cycleModule` are unused, the On-Ramp's `weekPlan`
+and `graduatesTo` are data nothing reads, and the pelvic-floor answer changes the impact wording
+but performs no exercise substitution despite `pelvicFloorRisk` being tagged on 34 movements.
