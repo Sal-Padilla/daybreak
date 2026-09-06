@@ -827,3 +827,11 @@ button.shape-row:active { background: var(--surface-2); }
 .plan-item { align-items: center; }
 .plan-item .plan-name { flex: 1 1 auto; }
 .plan-item .info-btn { margin-left: var(--sp-2); }
+
+/* Shown when a conflict has no clear day to move to — honest instead of a dead button. */
+.warn-note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--text-dim);
+}

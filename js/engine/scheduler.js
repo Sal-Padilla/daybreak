@@ -64,6 +64,8 @@ const CANONICAL_SPREAD = { 0: [], 1: [0], 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 
 const COST_BLOCKED = 1000;        // R2 — the class forbids this session type
 const COST_RECOVERY = 500;        // R3 — legs will not be recovered
 const COST_BACK_TO_BACK = 200;    // two lower days with no day between
+const COST_OVERRIDE_HONOURED = 500; // a hand-moved session outranks every automatic preference
+const COST_OVERRIDE_IGNORED  = 500;
 const COST_STACK_MATCH = 10;      // stacking costs volume, so only stack when the week is tight
 const COST_STACK_MISMATCH = 45;   // stacking onto a class that did not ask for this type
 const COST_ADJACENT = 12;         // any two lift days on consecutive mornings
@@ -389,8 +391,16 @@ function scoreLayout(assign, ctx) {
   let cost = 0;
   const canonical = CANONICAL_SPREAD[assign.length] || [];
   const usedSlots = assign.map((a) => a.slot);
+  const overrides = ctx.overrides || {};
 
   assign.forEach((a, i) => {
+    // If she has moved a session by hand, that beats everything the scorer would otherwise
+    // prefer. Without this the "Move it" button writes a preference nothing reads.
+    const want = overrides[a.day.key];
+    if (Number.isFinite(want)) {
+      cost += a.slot === want ? -COST_OVERRIDE_HONOURED : COST_OVERRIDE_IGNORED;
+    }
+
     cost += COST_DRIFT * Math.abs(a.slot - (canonical[i] == null ? a.slot : canonical[i]));
 
     const cls = ctx.dayClass[a.slot];
@@ -523,7 +533,7 @@ function moveFix(week, fromIndex, toIndex, classId) {
  * @param {string} weekStartISO  any date in the week, 'YYYY-MM-DD'; snapped to that Monday
  * @returns {Array} exactly 7 entries, Monday first
  */
-export function buildWeek(profile, classes, dials, weekStartISO) {
+export function buildWeek(profile, classes, dials, weekStartISO, options) {
   const prof = profile && typeof profile === 'object' ? profile : {};
   const D = normalizeDials(dials);
   const monday = mondayOf(parseLocalDate(weekStartISO) || new Date());
@@ -543,7 +553,8 @@ export function buildWeek(profile, classes, dials, weekStartISO) {
     return trainMin === null ? open : Math.max(open, trainMin);
   };
 
-  const ctx = { classRows, dayClass, startMinFor, dials: D };
+  const overrides = (options && options.overrides) || {};
+  const ctx = { classRows, dayClass, startMinFor, dials: D, overrides };
 
   // ---- the seven days -------------------------------------------------
   const week = [];

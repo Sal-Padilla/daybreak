@@ -1065,9 +1065,9 @@ remains untested on a physical phone.
   walkthrough". Pages enabled, serving `main` from the repository root.
 - `ae6afee` (6 Sep 2026) — this document.
 
-That second commit is a useful signal about the codebase in general: it is the app's own demo
-data catching four real bugs and one bad design decision that no amount of reading would have
-found. It is also a reminder that the target numbers on the Shape Map are recent and calibrated
+`ba32687` is a useful signal about the codebase in general: it is the app's own demo data
+catching four real bugs and one bad design decision that no amount of reading would have found.
+It is also a reminder that the target numbers on the Shape Map are recent, and calibrated
 against generated rather than observed training.
 
 ---

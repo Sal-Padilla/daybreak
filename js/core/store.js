@@ -61,6 +61,20 @@ async function findOpenSession(date) {
   return open[open.length - 1];
 }
 
+/**
+ * Which week of the programme she is actually in, derived from startedOn.
+ * The stored programWeek was written once at onboarding and never incremented, which froze
+ * the deload countdown at week 1 forever.
+ */
+export function currentProgramWeek(profile) {
+  if (!profile || !profile.startedOn) return 1;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(profile.startedOn);
+  if (!m) return 1;
+  const start = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const days = Math.floor((Date.now() - start.getTime()) / 86400000);
+  return Math.max(1, Math.floor(days / 7) + 1);
+}
+
 export const Store = {
   /**
    * Open the database, load the profile, compute the dials, and pick up an

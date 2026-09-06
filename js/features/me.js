@@ -1,7 +1,7 @@
 // Daybreak — js/features/me.js — profile, program, privacy, backup, and the safety boundary.
 
 import { DB } from '../core/db.js';
-import { Store } from '../core/store.js';
+import { Store, currentProgramWeek } from '../core/store.js';
 import { Router } from '../core/router.js';
 import { LIFE_STAGES, STAGE_RATIONALE, dialsFor } from '../engine/lifestage.js';
 import { PROGRAMS, programFor } from '../data/programs.js';
@@ -107,7 +107,14 @@ export async function render(el) {
         body:
           (program && program.description ? '<p class="lede">' + esc(program.description) + '</p>' : '') +
           '<div class="list">' +
-            row('Week', String(profile.programWeek || 1) + (program && program.weeks ? ' of ' + program.weeks : '')) +
+            // "of N" only makes sense for a programme that ends. The On-Ramp graduates after
+            // four weeks; the ongoing programme's `weeks` is its deload cycle, not a finish line,
+            // so "Week 14 of 6" would be nonsense.
+            row('Week', (() => {
+              const pw = currentProgramWeek(profile);
+              const finite = program && program.graduatesTo && program.weeks;
+              return finite ? Math.min(pw, program.weeks) + ' of ' + program.weeks : String(pw);
+            })()) +
             row('Heavy days a week', String(dials.heavyDaysPerWeek)) +
             row('Working effort', 'Leave ' + dials.rirTarget[0] + '–' + dials.rirTarget[1] + ' reps in the tank') +
             row('Sets per primary target', String(dials.weeklySetsPerPrimary) + ' a week') +

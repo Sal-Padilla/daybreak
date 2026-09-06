@@ -123,19 +123,29 @@ function dayRow(day, isToday, exerciseCount) {
 
 // ------------------------------------------------------------------ warnings
 
-function warningStrip(w) {
-  const fixBtn = w.fix && w.fix.action === 'move-session'
+function warningStrip(w, weekStart) {
+  // Only offer the button when there is somewhere to move to. When the week is saturated
+  // with leg-heavy classes the scheduler returns toDayIndex null — a "Move it" button that
+  // cannot move anything is worse than no button.
+  const payload = (w.fix && w.fix.payload) || {};
+  const movable = w.fix && w.fix.action === 'move-session' && Number.isFinite(payload.toDayIndex);
+
+  const fixBtn = movable
     ? btn({ label: 'Move it', action: 'apply-fix', size: 'md', variant: 'primary',
-            data: { code: w.code, payload: JSON.stringify(w.fix.payload || {}) } })
+            data: { code: w.code, payload: JSON.stringify(payload) } })
+    : '';
+  const noRoom = w.fix && w.fix.action === 'move-session' && !movable
+    ? '<p class="warn-note">There is no clear morning to move it to this week. Drop a class, ' +
+      'or take the lift lighter and accept it.</p>'
     : '';
   return (
     '<div class="warn">' +
       '<span class="warn-icon" aria-hidden="true">!</span>' +
       '<div class="warn-body">' +
-        '<p class="warn-text">' + esc(w.message) + '</p>' +
+        '<p class="warn-text">' + esc(w.message) + '</p>' + noRoom +
         '<div class="warn-actions">' + fixBtn +
           '<button type="button" class="link-quiet" data-action="dismiss-warn" ' +
-            'data-code="' + esc(w.code) + '">Dismiss</button>' +
+            'data-code="' + esc(w.code) + '" data-week="' + esc(weekStart) + '">Dismiss</button>' +
         '</div>' +
       '</div>' +
     '</div>'
@@ -348,7 +358,8 @@ export async function render(el) {
   const today = DB.todayISO();
   const weekStart = shiftDays(mondayOf(today), weekOffset * 7);
   const classes = (await DB.getAll('classes')) || [];
-  const week = buildWeek(profile, classes, dials, weekStart);
+  const overrides = (await DB.getPref('session:overrides', {})) || {};
+  const week = buildWeek(profile, classes, dials, weekStart, { overrides });
 
   const sessions = await DB.getSessionsInRange(week[0].date, week[6].date);
   for (const d of week) d.done = (sessions || []).some((s) => s.date === d.date && s.complete);
@@ -387,7 +398,7 @@ export async function render(el) {
         '<button type="button" class="week-nav" data-action="next-week" aria-label="Next week">›</button>' +
       '</header>' +
 
-      (conflicts.length ? '<div class="warn-stack">' + conflicts.map(warningStrip).join('') + '</div>' : '') +
+      (conflicts.length ? '<div class="warn-stack">' + conflicts.map((c) => warningStrip(c, weekStart)).join('') + '</div>' : '') +
 
       '<ul class="day-list">' + rows + '</ul>' +
 
@@ -474,8 +485,9 @@ export const actions = {
   },
 
   async 'dismiss-warn'(node) {
+    const key = node.dataset.week + '|' + node.dataset.code;
     const list = (await DB.getPref('warn:dismissed', [])) || [];
-    if (!list.includes(node.dataset.code)) list.push(node.dataset.code);
+    if (!list.includes(key)) list.push(key);
     await DB.setPref('warn:dismissed', list);
     return Router.refresh();
   },

@@ -1,7 +1,7 @@
 // Daybreak — js/features/today.js — the 5:25 AM screen. One question: what am I doing right now?
 
 import { DB } from '../core/db.js';
-import { Store } from '../core/store.js';
+import { Store, currentProgramWeek } from '../core/store.js';
 import { Router } from '../core/router.js';
 import { buildWeek } from '../engine/scheduler.js';
 import { weeklyShapeMap } from '../engine/shapemap.js';
@@ -266,8 +266,9 @@ function noteCard(profile, day, plan, dials) {
     if (breath) notes.push(lead.exercise.name + ': ' + breath);
   }
 
-  if (dials && dials.deloadEveryWeeks && profile.programWeek) {
-    const left = dials.deloadEveryWeeks - (profile.programWeek % dials.deloadEveryWeeks || dials.deloadEveryWeeks);
+  const pw = currentProgramWeek(profile);
+  if (dials && dials.deloadEveryWeeks && pw) {
+    const left = dials.deloadEveryWeeks - (pw % dials.deloadEveryWeeks || dials.deloadEveryWeeks);
     if (left === 0) notes.push('This is a deload week. Same movements, about 60% of the load. It is part of the plan, not a break from it.');
     else if (left === 1) notes.push('Deload week starts next week. Push a little now.');
   }

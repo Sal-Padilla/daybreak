@@ -37,6 +37,7 @@ let restingFor = null;
 let warmupTeardown = null;
 let lastSummary = null;
 let elapsedTicker = null;
+let restDefault = 90;        // her setting from Me; the programme item overrides it per exercise
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
@@ -414,6 +415,7 @@ export async function render(el) {
   if (!profile || !profile.name) { el.innerHTML = ''; return; }
 
   if (elapsedTicker) { clearInterval(elapsedTicker); elapsedTicker = null; }
+  restDefault = (await DB.getPref('rest:default', 90)) || 90;
 
   const session = Store.get('activeSession');
   const open = session && !session.complete;
@@ -637,7 +639,7 @@ export const actions = {
     await Store.reloadActiveSets();
 
     if (navigator.vibrate) { try { navigator.vibrate(30); } catch (_) { /* unsupported */ } }
-    startRest(item.restSec, item.exerciseId);
+    startRest(item.restSec || restDefault, item.exerciseId);
 
     // Last planned set of this exercise → ask for effort, once.
     if (existing.length + 1 >= item.sets) askEffort(item);
