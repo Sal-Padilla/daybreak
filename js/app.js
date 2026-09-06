@@ -5,6 +5,7 @@ import { Store } from './core/store.js';
 import { Router } from './core/router.js';
 import { needsOnboarding, renderOnboarding } from './features/onboarding.js';
 import { maybeNudge } from './features/report.js';
+import { offerInstall } from './features/install.js';
 import { toast } from './ui/components.js';
 
 import * as today from './features/today.js';
@@ -84,6 +85,9 @@ async function startApp() {
   // Sunday: offer the weekly report. This fires when the app is opened — we do not pretend
   // a web app can deliver it in the background, because it cannot.
   maybeNudge().catch((err) => console.warn('Daybreak: nudge check failed.', err));
+
+  // Offer to add it to the home screen. Silent if installed, dismissed, or unsupported.
+  offerInstall().catch((err) => console.warn('Daybreak: install offer failed.', err));
 }
 
 async function boot() {

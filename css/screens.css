@@ -835,3 +835,63 @@ button.shape-row:active { background: var(--surface-2); }
   line-height: 1.5;
   color: var(--text-dim);
 }
+
+/* ============================================== install prompt (Android / iOS) */
+
+.install-bar {
+  position: fixed;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--sp-3));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(140%);
+  opacity: 0;
+  transition: transform 0.32s var(--ease), opacity 0.32s var(--ease);
+}
+.install-bar.is-open { transform: translateY(0); opacity: 1; }
+
+.install-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.install-text strong { font-size: var(--fs-sm); font-weight: 600; }
+.install-text span { font-size: var(--fs-xs); line-height: 1.45; color: var(--text-dim); }
+.install-text b { color: var(--text); font-weight: 600; }
+
+.install-glyph {
+  display: inline-block;
+  width: 15px; height: 15px;
+  vertical-align: -3px;
+  color: var(--accent);
+}
+/* 'Tap [share icon] below' must never break around the glyph — it reads as a rendering
+   fault when it does. */
+.install-step { white-space: nowrap; }
+
+.install-go { flex: 0 0 auto; }
+
+.install-close {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border: 0; border-radius: var(--r-full);
+  background: none;
+  color: var(--text-dim);
+  font-size: 1.4rem; line-height: 1;
+  cursor: pointer;
+}
+.install-close:active { background: var(--surface-2); }
+
+/* The iOS variant points down at the Share button in Safari's toolbar, so it sits lower
+   and has no nav bar of ours beneath it. */
+.install-bar.is-ios { bottom: calc(env(safe-area-inset-bottom) + var(--sp-3)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .install-bar { transition: none; transform: none; opacity: 1; }
+}
