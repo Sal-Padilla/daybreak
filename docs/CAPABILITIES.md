@@ -10,8 +10,9 @@ different from what the documentation claims, this file says so.
 
 Daybreak is a single-user, offline-first progressive web app for women aged roughly 30–55 who
 lift early in the morning at Bay Club Redondo Beach. It is vanilla JavaScript ES modules — no
-build step, no framework, no dependencies, no CDN, no server, no accounts — about 17,900 lines
-across 30 JS files, four stylesheets and a service worker. All state lives in one IndexedDB
+build step, no framework, no dependencies, no CDN, no server, no accounts — roughly 14,600 lines
+of JavaScript across 30 files, plus four stylesheets, a 93-line shell and a service worker. All
+state lives in one IndexedDB
 database (`DaybreakDB`, version 1, eight object stores) on the device; nothing is ever
 transmitted anywhere. It does four things another training app generally does not: it re-dials
 volume, load and rep range by menopausal life stage rather than by age; it schedules the lifting
@@ -684,8 +685,8 @@ matter of changing `experience` and nothing else.
 
 Hand-writing 144 explanations would rot the moment the library changed, so the "i" panel is
 composed from the exercise's own metadata — pattern, targets, equipment, impact, tier — against
-`TARGET_WHY`, a library of what each shape target actually changes. **27 movements that carry
-the programme get a hand-written override on top.** The rule is stated in the file header and
+`TARGET_WHY`, a library of what each of the eleven shape targets actually changes. **26
+movements that carry the programme get a hand-written override on top.** The rule is stated in the file header and
 followed: never just name the muscle, say what it changes. Contextual flags are appended
 automatically for impact, axial load, high pelvic-floor risk and unilateral work.
 
@@ -720,10 +721,12 @@ rows. In `report.js` the same ordering holds and the hero carries the line "This
 that matters, not the scale." In `shapemap.js` the whole unit of account is the hard set rather
 than total pounds lifted, because pounds reward the squat and make a lateral raise look like
 nothing — which is exactly backwards for this goal. Both the Shape screen and the report detect
-waist-down-and-hips-up and name it: "That is recomposition — exactly what the scale cannot show
-you." In recomposition the scale can sit flat for six weeks while the body visibly changes, and a
-scale-first progress screen is the most reliable way to make someone quit a programme that is
-working.
+waist-down-and-hips-up over a 30-day window and name it: "That is recomposition — exactly what
+the scale cannot show you." In recomposition the scale can sit flat for six weeks while the body
+visibly changes, and a scale-first progress screen is the most reliable way to make someone quit
+a programme that is working. The commitment goes as far as the rounding: waist-to-hip deltas
+render to three decimal places specifically because a real fortnight of change is a few
+thousandths, and two decimals displayed it as "0".
 
 **Heavy shrugs and loaded twists are minimised, and the app says why.** Trap bulk shortens the
 neckline and loaded rotation thickens the waist — both the opposite of the shoulder-to-waist
@@ -1012,35 +1015,61 @@ scroll at 390 × 844 — was the checklist it was driven against.
 While writing this document, the pure logic was additionally verified by importing the modules
 under Node and running them: `dialsFor` across all three stages and both experience branches;
 `buildWeek` across five class configurations (zero, one, three, four and five weekday classes,
-plus a class starting at the door); `targetsFor`, `weeklyShapeMap` and `pillarTargets`;
-`readinessScore` and `readinessAdvice` across the band boundaries; `nextTarget` in all four of its
-outcomes and `adjustForReadiness` on top of one; `estimate1RM` including its 12-rep cutoff;
-`recommendations` on both sides of the `weekMatured` guard; `rankClasses` and `starterClasses`;
-`warmupFor`; `strengthLevel` including its null paths; and full integrity sweeps over the
-exercise library. The numbers quoted throughout this document are outputs of those runs, not
-readings of the documentation. No integrity failures were found: no duplicate ids, no broken
-swap references, no unresolvable programme exercise, no tier-1 or tier-2 lift missing a breath
-cue.
+plus a class starting at the door); `targetsFor`, `weeklyShapeMap` and `pillarTargets`, including
+three whole simulated weeks — a perfect On-Ramp week, a perfect Transition — 3 Day week, and the
+same week with her two real classes attached; `readinessScore` and `readinessAdvice` across the
+band boundaries; `nextTarget` in all four of its outcomes and `adjustForReadiness` on top of one;
+`estimate1RM` including its 12-rep cutoff; `recommendations` on both sides of the `weekMatured`
+guard; `rankClasses` and `starterClasses`; `warmupFor`; `strengthLevel` including its null paths;
+and full integrity sweeps over the exercise library. The numbers quoted throughout this document
+are outputs of those runs, not readings of the documentation. No integrity failures were found:
+no duplicate ids, no broken swap references, no unresolvable programme exercise, no tier-1 or
+tier-2 lift missing a breath cue. What that exercise cannot verify is anything involving the DOM,
+IndexedDB, the service worker or a real browser — which is most of the app by line count.
 
 **What has not.** There is no automated test suite of any kind — no test files, no runner, no
 `package.json`. Nothing here has been run on a physical phone, in Safari on iOS, or as an
 installed home-screen app, so the PWA install flow, the iOS storage-eviction behaviour, the
 native share sheet, `sms:` handoff, `navigator.vibrate`, camera capture for progress photos and
-notification permission are all unverified against real devices. It has never been deployed to
-GitHub Pages, so the relative-path claim — the reason `manifest.json` uses `"./"` and the service
-worker precaches `'./'` — is correct by inspection but not by observation. No real user has used
+notification permission are all unverified against real devices. No real user has used
 it and **no real training data exists**: every number the app has ever displayed came either from
 manual test entry or from `js/dev/seed.js`, which generates deterministic invented history.
 Nothing in the exercise library, the class metadata or the female strength standards has been
 reviewed by a coach, a physiotherapist or a clinician, and `PROJECT_PLAN` §14 explicitly flags
 the pelvic-floor copy as wanting human review before it ships to anyone.
 
-**Repository state.** One commit (`4712594`, 5 Sep 2026, "feat: Daybreak v0.2 — women's strength
-PWA for Bay Club Redondo Beach") on `main`, plus uncommitted work: `js/features/me.js` and
-`sw.js` modified and the whole of `js/dev/` untracked — that is the demo-data seeder and the Me
-card that drives it, added after the commit and not yet recorded.
+**Deployed and observed.** Since this section was first written the app has been published to
+GitHub Pages at **https://sal-padilla.github.io/daybreak/** and driven there. The relative-path
+claim is now verified by observation rather than inspection: all 34 assets resolve from the
+`/daybreak/` subpath with zero failures, `manifest.json` resolves to the subpath, the service
+worker registers with scope `https://sal-padilla.github.io/daybreak/`, and the full flow —
+onboarding as Rocio, loading the demo history through the Me card, then all five tabs — runs with
+no console errors. That closes the single largest inspection-only claim in this document. It
+remains untested on a physical phone.
+
+**Repository state.** Three commits on `main`, working tree otherwise clean.
+
+- `4712594` (5 Sep 2026) — "feat: Daybreak v0.2 — women's strength PWA for Bay Club Redondo
+  Beach". The whole app.
+- `ba32687` (6 Sep 2026) — "feat: demo history for Rocio, and the defects it exposed". Adds
+  `js/dev/seed.js` and the Me card that drives it, and fixes five defects that only became
+  visible once there was data in the app: the flat Shape Map target that no programme could
+  clear (now the per-muscle weighting described in section 3); the seeder writing without
+  clearing, which interleaved two pasts and made trend lines run backwards; class sessions
+  counted as lifts in the weekly report, because the report keyed on `classId` while the record
+  carried only `classFormatId`; waist-to-hip deltas rounding to "0"; and the recomposition line
+  never firing because hip growth at fourteen-day resolution sits inside tape-measure rounding.
+  It also stops the report printing "30 → 30 lb (+5%)" when the load held and only the reps
+  moved.
+
+That second commit is a useful signal about the codebase in general: it is the app's own demo
+data catching four real bugs and one bad design decision that no amount of reading would have
+found. It is also a reminder that the target numbers on the Shape Map are recent and calibrated
+against generated rather than observed training.
 
 ---
 
 *Daybreak gives general fitness guidance. It is not medical advice and does not diagnose or treat
 anything.*
+- `72a0a14` (6 Sep 2026) — "docs: live URL, install steps, and the demo-data walkthrough".
+  Pages enabled, serving `main` from the repository root.
