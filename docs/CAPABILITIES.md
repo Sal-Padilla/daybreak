@@ -1047,7 +1047,7 @@ onboarding as Rocio, loading the demo history through the Me card, then all five
 no console errors. That closes the single largest inspection-only claim in this document. It
 remains untested on a physical phone.
 
-**Repository state.** Three commits on `main`, working tree otherwise clean.
+**Repository state.** Four commits on `main`, working tree otherwise clean.
 
 - `4712594` (5 Sep 2026) — "feat: Daybreak v0.2 — women's strength PWA for Bay Club Redondo
   Beach". The whole app.
@@ -1061,6 +1061,9 @@ remains untested on a physical phone.
   never firing because hip growth at fourteen-day resolution sits inside tape-measure rounding.
   It also stops the report printing "30 → 30 lb (+5%)" when the load held and only the reps
   moved.
+- `72a0a14` (6 Sep 2026) — "docs: live URL, install steps, and the demo-data
+  walkthrough". Pages enabled, serving `main` from the repository root.
+- `ae6afee` (6 Sep 2026) — this document.
 
 That second commit is a useful signal about the codebase in general: it is the app's own demo
 data catching four real bugs and one bad design decision that no amount of reading would have
@@ -1071,5 +1074,3 @@ against generated rather than observed training.
 
 *Daybreak gives general fitness guidance. It is not medical advice and does not diagnose or treat
 anything.*
-- `72a0a14` (6 Sep 2026) — "docs: live URL, install steps, and the demo-data walkthrough".
-  Pages enabled, serving `main` from the repository root.
