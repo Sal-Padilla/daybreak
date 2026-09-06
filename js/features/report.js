@@ -84,7 +84,7 @@ export async function buildReport(weekOf) {
   const byType = { lift: 0, class: 0, conditioning: 0, recovery: 0 };
   const classNames = [];
   for (const s of done) {
-    if (s.classId) {
+    if (s.classId || s.type === 'class') {
       byType.class += 1;
       const f = classById(s.classFormatId || s.classId);
       if (f) classNames.push(f.name);
@@ -133,6 +133,7 @@ export async function buildReport(weekOf) {
   measurements.sort((a, b) => (a.date < b.date ? -1 : 1));
   const latest = measurements.length ? measurements[measurements.length - 1] : null;
   const twoWeeksBack = latest ? nearest(measurements, shiftDays(latest.date, -14), 10) : null;
+  const monthBack = latest ? nearest(measurements, shiftDays(latest.date, -30), 12) : null;
 
   function whr(m) {
     if (!m || !m.waistIn || !m.hipIn) return null;
@@ -158,9 +159,11 @@ export async function buildReport(weekOf) {
   } : null;
 
   // The recomposition signal: waist down AND hips up is exactly what the scale cannot show.
-  const recomposition = !!(body && body.deltas &&
-    body.deltas.waistIn != null && body.deltas.waistIn < 0 &&
-    body.deltas.hipIn != null && body.deltas.hipIn > 0);
+  // Judged over a month: hips move too slowly to clear tape-measure rounding in a fortnight.
+  const recompRef = monthBack || twoWeeksBack;
+  const recomposition = !!(latest && recompRef &&
+    latest.waistIn != null && recompRef.waistIn != null && latest.waistIn < recompRef.waistIn &&
+    latest.hipIn != null && recompRef.hipIn != null && latest.hipIn > recompRef.hipIn);
 
   // --- protein adherence
   let proteinHit = 0;
@@ -241,8 +244,13 @@ export function reportHtml(report) {
   const movers = r.movers.length
     ? '<ul class="mover-list">' + r.movers.map((m) =>
         '<li><span class="mover-name">' + esc(m.name) + '</span>' +
-        '<span class="mover-change num">' + fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
-        (m.pctGain ? ' <em>(+' + fmt.pct(m.pctGain) + ')</em>' : '') + '</span></li>').join('') + '</ul>'
+        // "30 → 30 lb (+5%)" reads like a bug. When the load held and the reps moved, say that.
+        '<span class="mover-change num">' +
+          (m.toWeight === m.fromWeight
+            ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+            : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
+              (m.pctGain ? ' <em>(+' + fmt.pct(m.pctGain) + ')</em>' : '')) +
+        '</span></li>').join('') + '</ul>'
     : '<p class="muted">Nothing to compare yet — give it two or three weeks and this fills in.</p>';
 
   let bodyBlock;
@@ -251,7 +259,7 @@ export function reportHtml(report) {
     const row = (label, value, dv, invert) => {
       if (value == null) return '';
       let deltaHtml = '';
-      if (dv != null && dv !== 0) {
+      if (dv != null && Math.abs(dv) >= 0.005) {
         const good = invert ? dv < 0 : dv > 0;
         deltaHtml = '<span class="delta ' + (good ? 'delta-good' : 'delta-bad') + '">' +
           (dv > 0 ? '▲ ' : '▼ ') + fmt.num(Math.abs(dv)) + '</span>';
@@ -264,9 +272,12 @@ export function reportHtml(report) {
       '<div class="measure-hero">' +
         '<span class="measure-hero-label">Waist to hip</span>' +
         '<span class="measure-hero-value num">' + (r.body.whr != null ? fmt.num(r.body.whr) : '—') + '</span>' +
-        (d && d.whr != null && d.whr !== 0
+        // Three decimals: a real fortnight of waist-to-hip change is a few thousandths,
+        // and fmt.num would round it away to "0".
+        (d && d.whr != null && Math.abs(d.whr) >= 0.0005
           ? '<span class="delta ' + (d.whr < 0 ? 'delta-good' : 'delta-bad') + '">' +
-            (d.whr > 0 ? '▲ ' : '▼ ') + fmt.num(Math.abs(d.whr)) + '</span>' : '') +
+            (d.whr > 0 ? '▲ ' : '▼ ') +
+            Math.abs(d.whr).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + '</span>' : '') +
         '<span class="measure-hero-note">This is the number that matters, not the scale.</span>' +
       '</div>' +
       row('Waist', r.body.waistIn, d && d.waistIn, true) +

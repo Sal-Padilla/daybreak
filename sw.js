@@ -41,6 +41,7 @@ const ASSETS = [
   './js/data/info.js',
   './js/engine/recommend.js',
   './js/ui/infosheet.js',
+  './js/dev/seed.js',
   './js/ui/timer.js',
 ];
 

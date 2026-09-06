@@ -5,6 +5,7 @@ import { Store } from '../core/store.js';
 import { Router } from '../core/router.js';
 import { LIFE_STAGES, STAGE_RATIONALE, dialsFor } from '../engine/lifestage.js';
 import { PROGRAMS, programFor } from '../data/programs.js';
+import { seedDemoData, clearDemoData, isDemoData } from '../dev/seed.js';
 import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
 
 export const id = 'me';
@@ -71,6 +72,7 @@ export async function render(el) {
   const theme = (await DB.getPref('theme', 'auto')) || 'auto';
   const restDefault = (await DB.getPref('rest:default', 90)) || 90;
   const lastBackup = await DB.getPref('backup:at', null);
+  const demo = await isDemoData();
 
   const backupDays = lastBackup
     ? Math.floor((Date.now() - new Date(lastBackup).getTime()) / 86400000)
@@ -176,6 +178,24 @@ export async function render(el) {
               'data-action="set-theme" data-theme="' + t + '">' +
               t.charAt(0).toUpperCase() + t.slice(1) + '</button>').join('') +
         '</div>',
+      }) +
+
+      card({
+        tone: demo ? 'brand' : undefined,
+        title: 'Demo data',
+        subtitle: demo ? 'This device is showing generated history' : 'Fourteen weeks of invented training',
+        body: demo
+          ? '<p class="lede">Everything you are looking at was generated, not trained. It exists ' +
+            'so the app can be judged with data in it — progression, personal bests, trend lines ' +
+            'and the weekly report only appear once there is a past behind them.</p>' +
+            '<p class="muted">Clear it before real training starts, or the numbers will be nonsense.</p>'
+          : '<p class="lede">Load fourteen weeks of invented training so you can see how the app ' +
+            'behaves with history: strength trends, personal bests, the weekly report, and a ' +
+            'waist-to-hip line that shows recomposition rather than weight loss.</p>' +
+            '<p class="muted">It overwrites whatever is on this device.</p>',
+        footer: demo
+          ? btn({ label: 'Clear the demo data', action: 'clear-demo', variant: 'danger', size: 'lg', full: true })
+          : btn({ label: 'Load 14 weeks of demo data', action: 'load-demo', variant: 'ghost', size: 'lg', full: true }),
       }) +
 
       card({
@@ -320,6 +340,33 @@ export const actions = {
     if (t === 'auto') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', t);
     return Router.refresh();
+  },
+
+  async 'load-demo'() {
+    const ok = await confirmDialog(
+      'Load fourteen weeks of invented training? This replaces everything currently on this device.',
+      { confirmLabel: 'Load it' });
+    if (!ok) return;
+    toast('Building fourteen weeks…');
+    try {
+      const profile = Store.get('profile') || {};
+      const summary = await seedDemoData({ name: profile.name || 'Rocio' });
+      await Store.init();
+      toast(summary.sessions + ' sessions and ' + summary.sets + ' sets loaded.', 'calm');
+      return Router.go('shape');
+    } catch (err) {
+      console.error('Daybreak: seeding failed.', err);
+      toast('Could not build the demo data.', 'signal');
+    }
+  },
+
+  async 'clear-demo'() {
+    const ok = await confirmDialog('Clear everything and start fresh?', {
+      confirmLabel: 'Clear it', danger: true,
+    });
+    if (!ok) return;
+    await clearDemoData();
+    window.location.reload();
   },
 
   async export() {

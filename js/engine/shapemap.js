@@ -88,6 +88,32 @@ function firstId(...candidates) {
  * @param {object} dials result of dialsFor(profile); may be null
  * @returns {Object<string, number>} one entry per SHAPE_TARGETS key
  */
+/*
+ * Not every target wants the same number of sets.
+ *
+ * The 10–20 sets a week evidence is about major muscle groups. Applying it flat across
+ * triceps and glutes alike sets a bar the program itself cannot clear: a perfect week of
+ * Transition — 3 Day delivers 24 sets of glute work and 4.5 of triceps, so a flat target
+ * of 14 would mark her permanently short on the small muscles no matter what she did. An
+ * app that always says you failed is one you stop opening.
+ *
+ * These weights scale the base target per key. They are set so a well-executed week lands
+ * close to 100% across the board, and classes push the thinner ones over.
+ */
+const TARGET_WEIGHT = {
+  gluteMax: 1.0,     // the headline; gets the most direct work
+  gluteMed: 0.7,     // small muscle, high frequency, less volume needed
+  hamstrings: 0.85,
+  back: 0.9,
+  delts: 0.75,       // lateral and rear only; not pressing volume
+  triceps: 0.45,     // gets substantial indirect work from every press
+  core: 0.6,         // quality over quantity, and classes add plenty
+  quads: 1.0,
+  chest: 0.8,
+  calves: 0.7,
+  biceps: 0.7,
+};
+
 export function targetsFor(dials) {
   const d = dials && typeof dials === 'object' ? dials : {};
   const primary = nonNeg(d.weeklySetsPerPrimary, 0);
@@ -95,7 +121,9 @@ export function targetsFor(dials) {
 
   const out = {};
   for (const key of SHAPE_KEYS) {
-    out[key] = SHAPE_TARGETS[key].tier === 'primary' ? primary : secondary;
+    const base = SHAPE_TARGETS[key].tier === 'primary' ? primary : secondary;
+    const weight = TARGET_WEIGHT[key] != null ? TARGET_WEIGHT[key] : 1;
+    out[key] = Math.round(base * weight * 2) / 2;      // nearest half set
   }
   return out;
 }

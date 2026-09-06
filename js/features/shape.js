@@ -175,13 +175,20 @@ function nearest(list, iso, maxDays) {
   return best;
 }
 
-function deltaChip(now, then, invertGood) {
+/**
+ * @param {boolean} [ratio] waist-to-hip moves in thousandths, so two decimals rounds a real
+ *                          fortnight of change down to "0". Ratios get three.
+ */
+function deltaChip(now, then, invertGood, ratio) {
   if (now == null || then == null) return '';
-  const d = Math.round((now - then) * 100) / 100;
+  const places = ratio ? 1000 : 100;
+  const d = Math.round((now - then) * places) / places;
   if (!d) return '<span class="delta delta-flat">no change</span>';
   const good = invertGood ? d < 0 : d > 0;
+  const shown = ratio ? Math.abs(d).toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
+    : fmt.num(Math.abs(d));
   return '<span class="delta ' + (good ? 'delta-good' : 'delta-bad') + '">' +
-    (d > 0 ? '▲ ' : '▼ ') + fmt.num(Math.abs(d)) + '</span>';
+    (d > 0 ? '▲ ' : '▼ ') + shown + '</span>';
 }
 
 function measureSection(list) {
@@ -201,9 +208,13 @@ function measureSection(list) {
   const back30 = nearest(list, shiftDays(latest.date, -30), 12);
   const whr = whrOf(latest);
 
-  const recomp = back14 &&
-    latest.waistIn != null && back14.waistIn != null && latest.waistIn < back14.waistIn &&
-    latest.hipIn != null && back14.hipIn != null && latest.hipIn > back14.hipIn;
+  // Recomposition is judged over a month, not a fortnight. Hips grow slowly and a tape
+  // measure reads to the nearest eighth of an inch, so at 14-day resolution the hip change
+  // is usually inside the rounding and the signal never fires even when it is really there.
+  const recompRef = back30 || back14;
+  const recomp = recompRef &&
+    latest.waistIn != null && recompRef.waistIn != null && latest.waistIn < recompRef.waistIn &&
+    latest.hipIn != null && recompRef.hipIn != null && latest.hipIn > recompRef.hipIn;
 
   const row = (label, key, invertGood) => {
     if (latest[key] == null) return '';
@@ -224,7 +235,7 @@ function measureSection(list) {
       '<div class="measure-hero">' +
         '<span class="measure-hero-label">Waist to hip</span>' +
         '<span class="measure-hero-value num">' + (whr != null ? fmt.num(whr) : '—') + '</span>' +
-        (back14 ? deltaChip(whr, whrOf(back14), true) : '') +
+        (back14 ? deltaChip(whr, whrOf(back14), true, true) : '') +
         '<span class="measure-hero-note">The number that matters.</span>' +
       '</div>' +
       (whrSeries.length > 2
