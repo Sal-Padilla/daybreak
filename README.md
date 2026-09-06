@@ -1,4 +1,6 @@
-# Daybreak — v0.2
+# Daybreak — v0.3
+
+**Live: https://sal-padilla.github.io/daybreak/**
 
 A strength and body-composition app for women 30–55 training early mornings at
 Bay Club Redondo Beach.
@@ -25,13 +27,15 @@ does not appear, open DevTools → Application → Service Workers → Unregiste
 
 ## Put it on a phone
 
-1. Push this folder to a GitHub Pages repo (or a subfolder of one).
-2. Open the URL in Safari (iPhone) or Chrome (Android).
-3. Share → **Add to Home Screen**.
+1. Open **https://sal-padilla.github.io/daybreak/** in Safari (iPhone) or Chrome (Android).
+2. Share → **Add to Home Screen**.
 
-Every path in the app is relative, so it works from a subpath like
-`sal-padilla.github.io/daybreak/` as well as from a domain root. Anyone you send the link
-to can install it the same way — there is no sign-up.
+That is the whole install. No sign-up, no account, no app store. Anyone you send the link to
+can do the same, and their data stays on their own phone — nothing is shared and nothing
+reaches a server.
+
+Deploying an update is `git push`; Pages serves `main` from the repository root. Every path in
+the app is relative, which is what lets it run from the `/daybreak/` subpath at all.
 
 ---
 
@@ -97,6 +101,19 @@ will do the set.
   cue; the app never coaches breath-holding.
 - **Female strength standards.** Real ones. The predecessor app hardcoded male norms.
 
+## Seeing it with data in it
+
+An empty fitness app tells you nothing. **Me → Demo data → Load 14 weeks** generates a
+believable past for Rocio: three lifts a week, classes she went to and some she skipped,
+progression on a decelerating novice-gains curve with real stalls, and measurements showing
+waist down, hips up, scale nearly flat.
+
+It is deterministic, so the same past appears every time, and it clears whatever was there
+first. Building it is what exposed the Shape Map target bug described in the commit history —
+the app was setting a bar its own program could not clear.
+
+Clear it from the same screen before real training starts.
+
 ## Weekly report
 
 Built on demand or nudged on Sunday, then sent with one tap via the native share sheet,
@@ -123,6 +140,7 @@ js/
             sessionplan · recommend
   features/ onboarding · warmup · today · train · week · shape · me · report
   ui/       components · charts (incl. the Shape Map body diagram) · timer · infosheet
+  dev/      seed (fourteen weeks of generated history)
 ```
 
 ## Status
@@ -130,7 +148,10 @@ js/
 Working end to end: onboarding → week → session → set logging → Shape Map → pillars →
 recommendations → report → share. The real Redondo Beach morning schedule is loaded.
 
+Live at https://sal-padilla.github.io/daybreak/ and verified working there — all assets
+resolve from the subpath, the service worker scopes correctly, and the full flow runs.
+
 Not yet done: no Sunday classes in the schedule (the screenshots did not cover it), progress
-photos beyond basic capture, and no data has been collected on a real phone yet.
+photos beyond basic capture, and no real training data has been collected on a physical phone.
 
 Daybreak gives general fitness guidance. It is not medical advice.

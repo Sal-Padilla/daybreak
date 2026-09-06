@@ -1,7 +1,7 @@
 # DAYBREAK — Project Plan
 ### A strength & body-composition app for women 30–55 training at 5:30 AM, Bay Club Redondo Beach
 
-**Status:** v0.2 built and working — real class schedule, four training pillars, "i" info panels and recommendations. See [README.md](README.md).
+**Status:** v0.3 — live at https://sal-padilla.github.io/daybreak/ and verified there. See [README.md](README.md).
 **Author:** Claude (Opus 5) for Sal Padilla
 **Date:** 2026-09-04
 **Predecessor reviewed:** IronPulse v3.6 (`WorkOut_App/IronPulse_v3`)
