@@ -1,6 +1,8 @@
 // Daybreak — sw.js — offline shell. Every path is relative: this ships to a GitHub Pages subpath.
 
-const CACHE = 'daybreak-v0.1.0';
+// Bump this on any change to the strategy below. Asset freshness no longer depends on it —
+// stale-while-revalidate handles that — but a new name forces one clean sweep of old caches.
+const CACHE = 'daybreak-v0.3.0';
 
 // Relative paths, resolved against the service worker's own scope. A leading slash here would
 // point at the domain root and break the app the moment it lives under /daybreak/.
@@ -102,19 +104,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: cache first for speed, but a MISS STILL HITS THE NETWORK and back-fills.
+  // Static assets: STALE-WHILE-REVALIDATE.
+  //
+  // Serve from cache immediately, so the app opens instantly and works in the concrete box
+  // that is the weight room. But ALWAYS re-fetch in the background and update the cache, so
+  // the next launch has the new code.
+  //
+  // The previous version was cache-first with no revalidation, which meant the cache only ever
+  // refreshed when CACHE_NAME changed by hand. Miss that bump once — which happened — and every
+  // installed copy is frozen on the version it first downloaded, forever. For an app that
+  // deploys by `git push` and has no build step to fingerprint filenames, this is the only
+  // strategy that is safe to forget about.
   event.respondWith((async () => {
     const cached = await caches.match(req);
-    if (cached) return cached;
-    try {
-      const fresh = await fetch(req);
+
+    const network = fetch(req).then(async (fresh) => {
       if (fresh && fresh.ok && fresh.type === 'basic') {
         const cache = await caches.open(CACHE);
         cache.put(req, fresh.clone());
       }
       return fresh;
-    } catch (err) {
-      return new Response('', { status: 504, statusText: 'Offline' });
+    }).catch(() => null);
+
+    if (cached) {
+      event.waitUntil(network);       // refresh behind her back
+      return cached;
     }
+    const fresh = await network;
+    return fresh || new Response('', { status: 504, statusText: 'Offline' });
   })());
 });
