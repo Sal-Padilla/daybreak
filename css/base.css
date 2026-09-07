@@ -82,7 +82,10 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]){
   min-height: var(--tap);
 }
 
-button, [role="button"]{ min-width: var(--tap); }
+/* A tap target needs ~44px in its SMALLEST dimension, not 56px of width. Buttons that share
+   a row must be free to narrow, or five of them cannot fit on a 320px screen. Height is
+   enforced per component instead. */
+button, [role="button"]{ min-width: min(var(--tap), 100%); }
 
 textarea{ min-height: calc(var(--tap) * 1.5); resize: vertical; }
 

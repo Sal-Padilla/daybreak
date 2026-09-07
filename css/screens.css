@@ -1068,3 +1068,17 @@ button.shape-row:active { background: var(--surface-2); }
   overflow-wrap: anywhere;
 }
 .list-item .list-chevron { flex: 0 0 auto; }
+
+/* base.css puts min-width: var(--tap) on every button. That is the right instinct for a
+   standalone button and the wrong one for a row of five: 5 x 56px plus gaps needs 312px of a
+   256px container, so the readiness scale ran off the right edge of a 320px screen.
+   The accessibility requirement is ~44px in the SMALLEST dimension, and these are 56px tall,
+   so they can safely narrow. */
+.scale-dots { gap: var(--sp-1); }
+.scale-dot { min-width: 0; }
+
+/* Same shape of problem wherever buttons share a row. */
+.rest-actions .btn,
+.warmup-actions .btn,
+.segmented-option,
+.btn-pair .btn { min-width: 0; }
