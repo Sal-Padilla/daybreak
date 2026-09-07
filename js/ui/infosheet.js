@@ -8,6 +8,7 @@ import { sheet } from './components.js';
 import { exerciseInfo, classInfo, pillarInfo } from '../data/info.js';
 import { byId } from '../data/exercises.js';
 import { classById } from '../data/classes.js';
+import { DIAGRAMS } from '../data/diagrams.js';
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
@@ -20,6 +21,31 @@ export function infoButton(kind, id, label) {
   return '<button type="button" class="info-btn" data-action="show-info" ' +
     'data-kind="' + esc(kind) + '" data-id="' + esc(id) + '" ' +
     'aria-label="What is ' + esc(label || id) + ', and what does it do?">i</button>';
+}
+
+/** The movement diagram, if we have one for this shape. Silent when we do not. */
+function diagramBlock(info) {
+  if (!info || !info.diagramKey) return '';
+  const d = DIAGRAMS[info.diagramKey];
+  if (!d || !d.svg) return '';
+
+  const setup = (d.setup || []).length
+    ? '<ol class="ex-setup">' + d.setup.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ol>'
+    : '';
+
+  return '<figure class="ex-figure">' + d.svg +
+    '<figcaption>' + esc(d.name || info.title) + '</figcaption></figure>' + setup;
+}
+
+/** A link out to a demonstration. The app ships no video, so this is the honest answer. */
+function watchBlock(info) {
+  if (!info || !info.watchUrl) return '';
+  return '<a class="btn btn-ghost btn-md btn-full watch-link" href="' + esc(info.watchUrl) + '" ' +
+    'target="_blank" rel="noopener noreferrer">' +
+    '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M10.5 9.5l5 2.5-5 2.5z"/></svg>' +
+    '<span>Watch how it is done</span></a>';
 }
 
 function renderPanel(info) {
@@ -53,9 +79,10 @@ function renderPanel(info) {
     : '';
 
   return (
+    diagramBlock(info) +
     (info.what ? '<p class="info-what">' + esc(info.what) + '</p>' : '') +
     (info.why ? '<p class="info-why">' + esc(info.why) + '</p>' : '') +
-    targets + cues + pillars + flags
+    targets + cues + pillars + flags + watchBlock(info)
   );
 }
 

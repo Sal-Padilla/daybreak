@@ -88,7 +88,7 @@ body.is-onboarding .bottom-nav { display: none; }
 .onboarding {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - var(--header-h) - var(--sp-5));
+  min-height: 100%;
   padding-bottom: env(safe-area-inset-bottom);
 }
 .ob-head {
@@ -118,7 +118,8 @@ body.is-onboarding .bottom-nav { display: none; }
 .ob-dot.is-done { background: var(--accent-soft); }
 .ob-dot.is-active { background: var(--accent); transform: scale(1.35); }
 
-.ob-body { flex: 1 1 auto; }
+/* Room to scroll clear of the pinned footer, so the last option is never trapped behind it. */
+.ob-body { flex: 1 1 auto; padding-bottom: var(--sp-5); }
 .ob-title {
   font-family: var(--font-display);
   font-size: var(--fs-h1);
@@ -139,7 +140,17 @@ body.is-onboarding .bottom-nav { display: none; }
 .ob-input { font-size: 1.25rem; }
 .ob-unit { color: var(--text-dim); font-size: var(--fs-sm); align-self: center; }
 .ob-grid { display: flex; flex-direction: column; gap: var(--sp-4); }
-.ob-foot { padding: var(--sp-5) 0 var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+/* Pinned. The primary action is always on screen, whatever the system font size does to the
+   height of the content above it. */
+.ob-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding: var(--sp-4) 0 calc(var(--sp-4) + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  background: var(--bg);
+  box-shadow: 0 -12px 16px -8px var(--bg), 0 -1px 0 var(--border);
+}
 .ob-skip {
   background: none; border: 0; color: var(--text-dim);
   font: inherit; font-size: var(--fs-sm);
@@ -587,7 +598,7 @@ body.is-onboarding .bottom-nav { display: none; }
   font-size: var(--fs-sm); line-height: 1.5; text-align: left; color: var(--text);
 }
 .warmup-foot { display: flex; flex-direction: column; gap: var(--sp-2); align-items: center; padding-bottom: var(--sp-5); }
-.warmup-foot .btn { width: 100%; }
+.warmup-foot > .btn { width: 100%; }
 .warmup-links { display: flex; gap: var(--sp-4); }
 .warmup-total { font-size: var(--fs-xs); color: var(--text-dim); margin: 0; font-variant-numeric: tabular-nums; }
 
@@ -895,3 +906,143 @@ button.shape-row:active { background: var(--surface-2); }
 @media (prefers-reduced-motion: reduce) {
   .install-bar { transition: none; transform: none; opacity: 1; }
 }
+
+/* ===================================== exercise diagrams and "watch how" */
+
+.ex-figure {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-radius: var(--r);
+  text-align: center;
+}
+.ex-figure svg.exdiagram {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.ex-setup {
+  margin: 0 0 var(--sp-4);
+  padding-left: var(--sp-5);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+.ex-setup li { margin-bottom: var(--sp-1); }
+
+.watch-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  margin-top: var(--sp-2);
+}
+
+/* The diagram shown inline on the Train screen — smaller, tappable to open the full panel. */
+.ex-thumb {
+  display: block;
+  width: 100%;
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  background: var(--surface-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.ex-thumb svg.exdiagram { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto; }
+
+/* Warm-up: Pause and Next share a row so the movement above keeps its space. */
+.warmup-actions { display: flex; gap: var(--sp-2); width: 100%; }
+.warmup-actions .btn { flex: 1 1 0; }
+.warmup-actions .btn-primary { flex: 2 1 0; }
+
+/* The set row is pinned to the bottom of the session view. With the system font turned up the
+   card above it easily exceeds the viewport, and the log button was ending up hundreds of
+   pixels below the fold — the same failure that made onboarding a dead end. */
+.train.is-active .set-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  margin: 0 calc(var(--sp-4) * -1) calc(var(--sp-4) * -1);
+  padding: var(--sp-3) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom));
+  background: var(--surface);
+  box-shadow: 0 -14px 18px -10px var(--surface), 0 -1px 0 var(--border);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+
+/* The set row must survive a narrow screen with the system font turned up.
+   components.css lays it out as a fixed 4-column grid, which collides at 320px / 22px —
+   labels overlap the inputs and the log button lands on top of the stepper. Flex with wrap
+   degrades instead: the fields drop onto their own lines and everything stays tappable. */
+.train.is-active .set-row,
+.set-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  grid-template-columns: none;
+}
+.set-row .set-field {
+  flex: 1 1 118px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.set-row .set-field-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.set-row .stepper { min-width: 0; }
+.set-row .stepper-input { min-width: 0; width: 100%; }
+.set-row .set-field-unit { flex: 0 0 auto; align-self: center; font-size: var(--fs-xs); color: var(--text-dim); }
+
+.set-row .set-log {
+  flex: 0 0 auto;
+  width: var(--tap);
+  height: var(--tap);
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.set-row .set-log:active { background: var(--accent-press); }
+
+/* The exercise header holds a long name plus two controls. At a large system font the name
+   pushes "Swap" off the edge, so let the row wrap and keep the controls whole. */
+.exercise-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.exercise-head > div:first-child { flex: 1 1 140px; min-width: 0; }
+.exercise-name { overflow-wrap: anywhere; }
+.exercise-actions { flex: 0 0 auto; margin-left: auto; }
+.exercise-swap {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  white-space: nowrap;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.exercise-swap:active { background: var(--surface-2); }

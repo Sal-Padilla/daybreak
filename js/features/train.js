@@ -19,6 +19,8 @@ import { warmupFor, renderWarmup } from './warmup.js';
 import { takeReadiness } from './today.js';
 import { RestTimer } from '../ui/timer.js';
 import { infoButton, infoActions } from '../ui/infosheet.js';
+import { DIAGRAMS } from '../data/diagrams.js';
+import { diagramKeyFor, howToUrl } from '../data/info.js';
  import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
 
 export const id = 'train';
@@ -241,6 +243,14 @@ function loggedRows(item) {
 
 // ------------------------------------------------------------ exercise card
 
+function diagramThumb(ex) {
+  const key = diagramKeyFor(ex);
+  const d = key && DIAGRAMS[key];
+  if (!d || !d.svg) return '';
+  return '<button type="button" class="ex-thumb" data-action="show-info" data-kind="exercise" ' +
+    'data-id="' + esc(ex.id) + '" aria-label="See how to do ' + esc(ex.name) + '">' + d.svg + '</button>';
+}
+
 function exerciseCard(item) {
   const ex = item.exercise;
   const t = targets.get(item.exerciseId);
@@ -272,6 +282,9 @@ function exerciseCard(item) {
         '</div>' +
       '</header>' +
 
+      // The picture of the movement, on the card itself. Mid-session is exactly when
+      // "what does this actually look like" matters, and the info sheet is one tap too far.
+      diagramThumb(ex) +
       targetLine +
       (t && t.message ? '<p class="exercise-why">' + esc(t.message) + '</p>' : '') +
       (item.note ? '<p class="exercise-note">' + esc(item.note) + '</p>' : '') +
@@ -283,13 +296,18 @@ function exerciseCard(item) {
             .map((c) => '<li class="cue">' + esc(c) + '</li>').join('') + '</ul>' : '') +
 
       loggedRows(item) +
-      inputRow(item) +
       restBlock(item) +
 
       '<div class="exercise-foot">' +
+        '<a class="link-quiet" href="' + esc(howToUrl(ex) || '#') + '" target="_blank" rel="noopener noreferrer">Watch how</a>' +
         '<button type="button" class="link-quiet" data-action="add-exercise">Add an exercise</button>' +
         '<button type="button" class="link-quiet" data-action="next-exercise">Skip this one</button>' +
       '</div>' +
+
+      // The set row goes LAST and is pinned to the bottom of the scroll area. At a large system
+      // font everything above it can easily run past the fold, and the one control that must
+      // never be hunted for is the one that logs the set.
+      inputRow(item) +
     '</article>'
   );
 }

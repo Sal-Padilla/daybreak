@@ -2,7 +2,7 @@
 
 // Bump this on any change to the strategy below. Asset freshness no longer depends on it —
 // stale-while-revalidate handles that — but a new name forces one clean sweep of old caches.
-const CACHE = 'daybreak-v0.3.0';
+const CACHE = 'daybreak-v0.5.0';
 
 // Relative paths, resolved against the service worker's own scope. A leading slash here would
 // point at the domain root and break the app the moment it lives under /daybreak/.
@@ -49,6 +49,7 @@ const ASSETS = [
   './js/engine/recommend.js',
   './js/ui/infosheet.js',
   './js/dev/seed.js',
+  './js/data/diagrams.js',
   './js/ui/timer.js',
 ];
 

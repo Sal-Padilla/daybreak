@@ -49,11 +49,11 @@ let rootEl = null;
 function freshDraft() {
   return {
     name: '',
-    lifeStage: 'transition',
-    experience: 'new',
+    lifeStage: null,
+    experience: null,
     heightIn: null,
     weightLb: null,
-    goal: 'recomp',
+    goal: null,
     pelvicFloor: 'unknown',
   };
 }
@@ -232,11 +232,11 @@ async function finish() {
   const profile = {
     id: 'me',
     name: draft.name.trim() || 'Friend',
-    lifeStage: draft.lifeStage,
-    experience: draft.experience,
+    lifeStage: draft.lifeStage || 'transition',
+    experience: draft.experience || 'new',
     heightIn: draft.heightIn,
     weightLb: draft.weightLb,
-    goal: draft.goal,
+    goal: draft.goal || 'recomp',
     pelvicFloor: draft.pelvicFloor,
     startedOn: DB.todayISO(),
     programWeek: 1,

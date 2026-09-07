@@ -200,8 +200,69 @@ export function exerciseInfo(exercise) {
     how: TRACK_HOW[exercise.track] || '',
     pillars,
     flags,
-    cues: exercise.cues || []
+    cues: exercise.cues || [],
+    watchUrl: howToUrl(exercise),
+    diagramKey: diagramKeyFor(exercise)
   };
+}
+
+/**
+ * Which movement diagram best represents this exercise.
+ *
+ * There are far more exercises than diagrams, so this matches by name first — a dumbbell and a
+ * barbell Romanian deadlift are the same shape — then falls back to the movement pattern.
+ * Returns null when nothing sensible fits, and the UI shows no picture rather than a misleading
+ * one.
+ */
+export function diagramKeyFor(exercise) {
+  if (!exercise) return null;
+  const n = (exercise.name || '').toLowerCase();
+  const id = exercise.id || '';
+
+  const byName = [
+    [/hip thrust|glute bridge|frog pump/, 'hip-thrust'],
+    [/romanian deadlift|\brdl\b|good morning|pull-?through|back extension|deadlift/, 'romanian-deadlift'],
+    [/split squat|lunge|step-?up|step-?down/, 'split-squat'],
+    [/squat|leg press|leg extension/, 'squat'],
+    [/pulldown|pull-?up|chin-?up|pullover/, 'lat-pulldown'],
+    [/\brow\b/, 'seated-row'],
+    [/bench press|chest press|push-?up|\bfly\b|pec deck/, 'bench-press'],
+    [/overhead press|shoulder press|military|arnold/, 'overhead-press'],
+    [/lateral raise|side raise|upright row/, 'lateral-raise'],
+    [/face pull|rear delt|reverse pec/, 'face-pull'],
+    [/leg curl|nordic|ham(string)? curl/, 'leg-curl'],
+    [/abduction|clamshell|monster walk|lateral walk|fire hydrant|curtsy/, 'hip-abduction'],
+    [/plank|dead bug|hollow|pallof|bird dog|ab wheel|crunch|sit-?up|knee raise/, 'plank'],
+    [/carry|farmer|suitcase/, 'farmer-carry']
+  ];
+  for (const [re, key] of byName) if (re.test(n) || re.test(id)) return key;
+
+  const byPattern = {
+    hinge: 'romanian-deadlift',
+    squat: 'squat',
+    lunge: 'split-squat',
+    'pull-v': 'lat-pulldown',
+    'pull-h': 'seated-row',
+    'push-h': 'bench-press',
+    'push-v': 'overhead-press',
+    carry: 'farmer-carry',
+    core: 'plank'
+  };
+  return byPattern[exercise.pattern] || null;
+}
+
+/**
+ * Where to go to actually watch the movement.
+ *
+ * The app ships no video and no photography — everything is on-device and there is no CDN — so
+ * the honest answer to "show me how" is to hand her a good search rather than pretend. YouTube
+ * because that is where the demonstrations are, and the query is tuned to surface a coaching
+ * clip rather than a workout montage.
+ */
+export function howToUrl(exercise) {
+  if (!exercise || !exercise.name) return null;
+  const q = exercise.name + ' proper form how to';
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
 }
 
 /** The "i" panel for a class format. */

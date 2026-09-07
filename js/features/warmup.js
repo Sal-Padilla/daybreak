@@ -157,10 +157,15 @@ export function renderWarmup(el, plan, onDone) {
             : '') +
         '</div>' +
 
+        // Pause and Next sit on ONE row rather than stacking two full-width buttons. That
+        // gives the movement above roughly 60px of vertical space back, which is the
+        // difference between seeing the picture and not.
         '<footer class="warmup-foot">' +
-          btn({ label: paused ? 'Resume' : 'Pause', action: 'wu-pause', variant: 'ghost', size: 'md' }) +
-          btn({ label: index === current.items.length - 1 ? 'Start lifting' : 'Next',
-                action: 'wu-next', variant: 'primary', size: 'lg', full: true }) +
+          '<div class="warmup-actions">' +
+            btn({ label: paused ? 'Resume' : 'Pause', action: 'wu-pause', variant: 'ghost', size: 'md' }) +
+            btn({ label: index === current.items.length - 1 ? 'Start lifting' : 'Next',
+                  action: 'wu-next', variant: 'primary', size: 'md' }) +
+          '</div>' +
           '<div class="warmup-links">' +
             (current.trimmed ? '' :
               '<button type="button" class="link-quiet" data-action="wu-short">Short version</button>') +
