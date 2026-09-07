@@ -1046,3 +1046,25 @@ button.shape-row:active { background: var(--surface-2); }
   cursor: pointer;
 }
 .exercise-swap:active { background: var(--surface-2); }
+
+/* Profile rows put a label and a value on one line. Values like "Coming back after a break"
+   and "Leave 2–3 reps in the tank" run straight off a 320px screen once the system font is
+   turned up, taking the chevron with them. Let the row wrap instead. */
+.list-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sp-3) 0;
+  text-align: left;
+}
+.list-item .list-label { flex: 1 1 auto; min-width: 0; }
+.list-item .list-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.list-item .list-chevron { flex: 0 0 auto; }
