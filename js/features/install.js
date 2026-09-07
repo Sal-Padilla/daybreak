@@ -100,6 +100,31 @@ function showIOS() {
  * Decide whether to offer anything, and what. Safe to call on every boot — it is silent
  * once the app is installed, once she has dismissed it, or on a browser that cannot install.
  */
+/**
+ * Show the install help on demand, from Me. Ignores the dismissed flag — if she has come
+ * looking for it, she wants it.
+ */
+export function showInstallHelp() {
+  document.querySelectorAll('.install-bar').forEach((n) => n.remove());
+  if (isStandalone()) {
+    banner('<div class="install-text"><strong>Already installed</strong>' +
+      '<span>You are running Daybreak from your home screen.</span></div>');
+    return;
+  }
+  if (deferredPrompt) { showAndroid(); return; }
+  if (isIOS()) {
+    if (isIOSSafari()) { showIOS(); return; }
+    banner('<div class="install-text"><strong>Open this in Safari first</strong>' +
+      '<span>On an iPhone only Safari can add an app to the Home Screen. ' +
+      'Open the same link in Safari, then Share &rarr; Add to Home Screen.</span></div>',
+      { class: 'is-ios' });
+    return;
+  }
+  banner('<div class="install-text"><strong>Add Daybreak to your phone</strong>' +
+    '<span>In Chrome, open the &#8942; menu and choose <b>Install app</b> ' +
+    '(or <b>Add to Home screen</b>).</span></div>');
+}
+
 export async function offerInstall() {
   if (isStandalone()) return;                       // already installed
 

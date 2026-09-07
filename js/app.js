@@ -75,6 +75,11 @@ async function startApp() {
       if (nav) nav.hidden = false;
       await Router.init({ content, nav, features: FEATURES });
       await Router.go('today');
+
+      // Offer the install here too. This branch used to return before ever reaching
+      // offerInstall(), so a brand-new user finished onboarding and was never told the app
+      // could go on her home screen — she had to close and reopen it first.
+      offerInstall().catch((err) => console.warn('Daybreak: install offer failed.', err));
     });
     return;
   }

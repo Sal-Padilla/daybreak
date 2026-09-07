@@ -6,6 +6,7 @@ import { Router } from '../core/router.js';
 import { LIFE_STAGES, STAGE_RATIONALE, dialsFor } from '../engine/lifestage.js';
 import { PROGRAMS, programFor } from '../data/programs.js';
 import { seedDemoData, clearDemoData, isDemoData } from '../dev/seed.js';
+import { showInstallHelp } from './install.js';
 import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
 
 export const id = 'me';
@@ -206,6 +207,14 @@ export async function render(el) {
       }) +
 
       card({
+        title: 'On your home screen',
+        body:
+          '<p class="muted">Daybreak can sit on your home screen and open like any other app — ' +
+          'full screen, no browser bar, and it still works with no signal.</p>',
+        footer: btn({ label: 'How do I do that?', action: 'install-help', variant: 'ghost', size: 'md', full: true }),
+      }) +
+
+      card({
         title: 'About Daybreak',
         subtitle: 'Version ' + VERSION,
         body:
@@ -348,6 +357,8 @@ export const actions = {
     else document.documentElement.setAttribute('data-theme', t);
     return Router.refresh();
   },
+
+  'install-help'() { showInstallHelp(); },
 
   async 'load-demo'() {
     const ok = await confirmDialog(
