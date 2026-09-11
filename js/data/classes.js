@@ -278,6 +278,84 @@ export const CLASS_FORMATS = [
     note: 'Dance cardio. Moderate cost, low stress, and the one on this list people actually look forward to — which is worth more than the numbers suggest.',
     what: 'Latin-inspired dance cardio. Follow the instructor, keep moving, no technique pressure.',
     why: 'Steady moderate cardio with a coordination and rhythm element, and low joint stress. It builds little muscle, so it does not replace anything — but enjoyment is the most underrated variable in whether a training week actually happens, and this is the class most people come back for.'
+  },
+
+  // ---- Sunday formats ----
+
+  {
+    id: 'les-mills-strength-development',
+    name: 'LES MILLS Strength Development',
+    intensity: 'high',
+    legFatigue: 'high',
+    cnsCost: 'moderate',
+    counts: { conditioning: 0, resistance: 0.75 },
+    pairWith: [],
+    blocks: ['lower', 'lower-heavy', 'glute', 'upper', 'full'],
+    recoveryHours: 24,
+    shapeContribution: {
+      quads: 2, gluteMax: 1.5, hamstrings: 1, back: 1.5,
+      chest: 1, delts: 1, core: 1, triceps: 0.5, biceps: 0.5
+    },
+    pillars: { resistive: 0.9, control: 0.4, cardio: 0.3, shape: 0.75 },
+    typicalStart: '08:00',
+    durationMin: 50,
+    note: 'Barbell strength work with real load — the only class here that is genuinely lifting. Nothing of yours belongs on the same morning: let this be the lift and put your own session on another day. Keep heavy squats and hip thrusts a clear day after it.',
+    what: 'A barbell class built around progressive overload rather than burn — squat, hinge, press, row and lunge, in low rep ranges with heavy plates and real rest between sets. You pick the load, and you are expected to add to it week on week.',
+    why: 'The closest thing on this timetable to your own training, and the only class here that loads you the way bone actually responds to. Heavy compound work is the signal that keeps muscle and slows the density loss that comes off your hip and spine fastest in the years around your last period. It earns three-quarter credit toward your weekly sets, more than any other class here. Where it stops short is the top end: the class rack runs out of plates well below what you can hip thrust, so treat it as a strong supplement to your three heavy days rather than a fourth one. It is still a hard lower-body morning, so give your own heavy leg work a clear day afterwards.'
+  },
+  {
+    id: 'hatha-yoga',
+    name: 'Hatha Yoga',
+    intensity: 'low',
+    legFatigue: 'low',
+    cnsCost: 'low',
+    counts: { conditioning: 0, resistance: 0 },
+    pairWith: ['lower-heavy', 'lower', 'upper', 'glute'],
+    blocks: [],
+    recoveryHours: 0,
+    shapeContribution: { core: 1, gluteMed: 0.5, delts: 0.5 },
+    pillars: { resistive: 0.15, control: 1, cardio: 0.1, shape: 0.15 },
+    typicalStart: '08:00',
+    durationMin: 50,
+    note: 'Held postures rather than a flow. It recovers more than it costs and takes nothing out of your legs, so it will follow any lift you like — and the doors open a full hour before it if you want to lift first.',
+    what: 'Yoga taught posture by posture instead of as a continuous flow. You set a shape up, hold it for several breaths, come out, and set the next one up. Slow, deliberate, with a lot of attention on the breathing.',
+    why: 'Holding a standing posture while nothing moves is still balance and single-leg control training, and control is the pillar that decides whether you are still lifting in ten years. Be clear that it builds no muscle — it earns no set credit and it is not trying to. What it gives you is hip and thoracic range, which is what lets you squat deeper and press overhead without your ribs flaring, plus a real return on stress and sleep. The breathing is not decoration: slow breathing early in the morning is one of the cheapest things you have against hot flashes and broken nights.'
+  },
+  {
+    id: 'gentle-yoga',
+    name: 'Gentle Yoga',
+    intensity: 'low',
+    legFatigue: 'low',
+    cnsCost: 'low',
+    counts: { conditioning: 0, resistance: 0 },
+    pairWith: ['lower-heavy', 'lower', 'upper', 'glute'],
+    blocks: [],
+    recoveryHours: 0,
+    shapeContribution: {},
+    pillars: { resistive: 0.05, control: 0.85, cardio: 0.05, shape: 0.05 },
+    typicalStart: '09:00',
+    durationMin: 50,
+    note: 'The same teacher an hour later, and considerably easier — supported postures, more floor, nothing held at the edge of your range. Pure recovery: it costs nothing, and it is the right call on a morning when the week has flattened you.',
+    what: 'Slower and softer than Hatha. Much of it happens on the floor, blocks and bolsters hold you up in the shapes, and the standing holds are largely gone.',
+    why: 'The honest difference from Hatha is effort, not content. Gentle takes the standing holds out, so you lose most of the balance work and keep all of the mobility and the calm. It builds nothing, and it is not pretending to. What it does is open hips and upper back after a week of loading, and drop your nervous system into a gear a busy week never lets it find — which matters more than it sounds when sleep is usually the first thing perimenopause breaks. If you only have room for one yoga class, take the earlier Hatha. If the week has beaten you up, take this one instead and count it as training, because that morning it is.'
+  },
+  {
+    id: 'barre-strong',
+    name: 'Barre Strong',
+    intensity: 'moderate',
+    legFatigue: 'high',
+    cnsCost: 'low',
+    counts: { conditioning: 0.25, resistance: 0.25 },
+    pairWith: ['upper'],
+    blocks: ['lower', 'lower-heavy', 'glute'],
+    recoveryHours: 24,
+    shapeContribution: { quads: 2, gluteMax: 1, gluteMed: 1, core: 1, calves: 0.5, delts: 0.5 },
+    pillars: { resistive: 0.3, control: 0.8, cardio: 0.4, shape: 0.4 },
+    typicalStart: '09:30',
+    durationMin: 50,
+    note: 'Hundreds of small reps, nearly all of them quads and glutes. Light load, but a lot of leg fatigue for what it builds — lift upper body before it if you lift at all, and keep squats and hip thrusts a clear day away.',
+    what: 'Ballet-derived work at the barre and on the mat: small pulses, long holds in a half squat, light hand weights and a band, very high reps throughout. The burn is local rather than breathless.',
+    why: 'Do not let anyone tell you this is nothing. Three hundred reps in a shortened range is real work, and the side-glute, deep core and single-leg control it trains are what hold your hips level and your pelvic floor coordinated under load. But be clear about the load itself: endurance-range work with no weight on your back does not load bone, and bone is the part of this you cannot get back later. It earns quarter credit toward your weekly sets and it does not stand in for a heavy day. The price is the awkward bit — your quads will be cooked afterwards for something that built very little, so if you love this class, and plenty of women do, put it on a morning you were never going to squat on anyway.'
   }
 ];
 
@@ -330,7 +408,13 @@ export const CLASS_SCHEDULE = [
   // Saturday
   { formatId: 'kickboxing',         dayOfWeek: 6, start: '08:00', end: '08:50', studio: 'Fitness Studio',        instructor: 'Ken Park' },
   { formatId: 'vinyasa-flow',       dayOfWeek: 6, start: '08:00', end: '09:15', studio: 'Turf Studio',           instructor: 'Summer Mecham' },
-  { formatId: 'zumba',              dayOfWeek: 6, start: '09:00', end: '09:50', studio: 'Fitness Studio',        instructor: 'Angella Blackhall' }
+  { formatId: 'zumba',              dayOfWeek: 6, start: '09:00', end: '09:50', studio: 'Fitness Studio',        instructor: 'Angella Blackhall' },
+  // Sunday
+  { formatId: 'les-mills-strength-development', dayOfWeek: 0, start: '08:00', end: '08:50', studio: 'Fitness Studio',        instructor: 'Pamela Light' },
+  { formatId: 'hatha-yoga',         dayOfWeek: 0, start: '08:00', end: '08:50', studio: 'Yoga Studio',           instructor: 'Lisa Schmahl' },
+  { formatId: 'gentle-yoga',        dayOfWeek: 0, start: '09:00', end: '09:50', studio: 'Yoga Studio',           instructor: 'Lisa Schmahl' },
+  { formatId: 'cycle',              dayOfWeek: 0, start: '09:15', end: '10:05', studio: 'Indoor Cycling Studio', instructor: 'Courtney Smith' },
+  { formatId: 'barre-strong',       dayOfWeek: 0, start: '09:30', end: '10:20', studio: 'Fitness Studio',        instructor: 'TBA' }
 ];
 
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

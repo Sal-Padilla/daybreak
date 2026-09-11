@@ -650,6 +650,7 @@ button.shape-row:active { background: var(--surface-2); }
 
 .info-btn {
   flex: 0 0 auto;
+  position: relative;      /* the ::after tap pad below is positioned against THIS */
   width: 30px; height: 30px;
   display: grid; place-items: center;
   border: 1.5px solid var(--border);
@@ -664,10 +665,18 @@ button.shape-row:active { background: var(--surface-2); }
 .info-btn:active { background: var(--surface-2); }
 .info-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* The tap target is bigger than the circle looks — 30px reads right, 44px is reachable. */
+/* The tap target is bigger than the circle looks — 30px reads right, 44px is reachable.
+   This needs .info-btn to be positioned. Without that the pad resolves against whatever
+   ancestor happens to be positioned, which put a 44x44 invisible click-catcher somewhere
+   else on the screen entirely — over other controls. */
 .info-btn::after {
-  content: ''; position: absolute;
-  min-width: 44px; min-height: 44px;
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 .info-what { font-size: var(--fs-body); line-height: 1.5; margin: 0 0 var(--sp-3); color: var(--text); }

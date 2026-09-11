@@ -7,6 +7,7 @@
 
 import { SHAPE_TARGETS } from './exercises.js';
 import { PILLARS, pillarScore } from './pillars.js';
+import { DIAGRAMS } from './diagrams.js';
 
 /* Why each Shape Map target matters — the "lady improvements" explanation. */
 export const TARGET_WHY = {
@@ -206,49 +207,92 @@ export function exerciseInfo(exercise) {
   };
 }
 
+
 /**
- * Which movement diagram best represents this exercise.
+ * Which movement diagram honestly represents this exercise.
  *
- * There are far more exercises than diagrams, so this matches by name first — a dumbbell and a
- * barbell Romanian deadlift are the same shape — then falls back to the movement pattern.
- * Returns null when nothing sensible fits, and the UI shows no picture rather than a misleading
- * one.
+ * Explicit, not inferred. Name regexes cannot tell a Leg Press from a Squat or a
+ * Rear Delt Fly from a Chest Fly, and a wrong picture is worse than none — the
+ * info sheet prints the diagram's own setup steps underneath it, so a mismatch
+ * ships wrong written instructions too. An exercise not listed here shows no
+ * picture, which is the correct answer until its shape is drawn.
  */
+const DIAGRAM_BY_ID = {
+  'hip-thrust': ['barbell-hip-thrust', 'dumbbell-hip-thrust', 'machine-hip-thrust',
+                 'smith-hip-thrust', 'single-leg-hip-thrust', 'b-stance-hip-thrust'],
+  'romanian-deadlift': ['romanian-deadlift', 'dumbbell-romanian-deadlift',
+                        'cable-romanian-deadlift', 'single-leg-romanian-deadlift'],
+  'squat': ['back-squat', 'front-squat', 'goblet-squat', 'hack-squat', 'smith-machine-squat'],
+  'split-squat': ['bulgarian-split-squat', 'dumbbell-split-squat'],
+  'lat-pulldown': ['lat-pulldown', 'neutral-grip-lat-pulldown', 'pull-up', 'assisted-pull-up'],
+  'seated-row': ['seated-cable-row', 'chest-supported-row', 'machine-row'],
+  'bench-press': ['bench-press', 'dumbbell-bench-press', 'incline-dumbbell-press',
+                  'machine-chest-press', 'close-grip-bench-press'],
+  'overhead-press': ['overhead-press', 'seated-dumbbell-shoulder-press', 'machine-shoulder-press'],
+  'lateral-raise': ['dumbbell-lateral-raise', 'cable-lateral-raise', 'machine-lateral-raise'],
+  // rear-delt work belongs here, not on bench-press. Zero new artwork.
+  'face-pull': ['face-pull', 'rear-delt-fly', 'reverse-pec-deck', 'cable-rear-delt-fly'],
+  'leg-curl': ['seated-leg-curl', 'lying-leg-curl', 'standing-leg-curl'],
+  'hip-abduction': ['cable-hip-abduction'],
+  'plank': ['plank', 'weighted-plank'],
+  'farmer-carry': ['farmer-carry', 'suitcase-carry', 'overhead-carry'],
+
+  // --- keys below have no artwork yet; listing them now means each new shape
+  // --- goes live the moment it is added to DIAGRAMS, with no code change.
+  'glute-bridge': ['glute-bridge', 'barbell-glute-bridge', 'glute-bridge-march', 'frog-pump'],
+  'deadlift-from-floor': ['conventional-deadlift', 'trap-bar-deadlift'],
+  'tricep-extension': ['rope-pushdown', 'straight-bar-pushdown', 'machine-tricep-extension',
+                       'overhead-tricep-extension', 'dumbbell-overhead-tricep-extension',
+                       'skull-crusher', 'tricep-kickback'],
+  'bicep-curl': ['dumbbell-curl', 'cable-curl', 'hammer-curl', 'ez-bar-curl',
+                 'incline-dumbbell-curl', 'machine-preacher-curl'],
+  'calf-raise': ['standing-calf-raise', 'seated-calf-raise', 'single-leg-calf-raise',
+                 'leg-press-calf-raise'],
+  'jump-land': ['box-jump', 'broad-jump', 'split-jump', 'pogo-hop', 'jump-rope',
+                'heel-drop', 'drop-squat'],
+  'supine-core': ['dead-bug', 'hollow-hold', 'lying-leg-raise', 'reverse-crunch'],
+  'anti-rotation': ['pallof-press', 'half-kneeling-pallof-press', 'standing-cable-woodchop'],
+  'high-plank': ['ab-wheel-rollout', 'stir-the-pot', 'plank-shoulder-tap'],
+  'bent-over-row': ['barbell-row', 't-bar-row', 'single-arm-dumbbell-row'],
+  'dynamic-lunge': ['reverse-lunge', 'deficit-reverse-lunge', 'walking-lunge'],
+  'step-up': ['box-step-up', 'lateral-step-up', 'step-down'],
+  'hip-supported-hinge': ['back-extension', 'glute-ham-raise', 'nordic-curl'],
+  'chest-fly': ['cable-chest-fly', 'dumbbell-chest-fly', 'pec-deck'],
+  'quadruped': ['bird-dog', 'fire-hydrant'],
+  'hang-from-bar': ['hanging-knee-raise'],
+  'push-up': ['push-up', 'incline-push-up'],
+  'leg-press-sled': ['leg-press', 'hack-squat'],
+  'side-lying-abduction': ['side-lying-hip-abduction', 'clamshell'],
+  'seated-abduction': ['machine-hip-abduction', 'seated-band-abduction'],
+  'banded-lateral-walk': ['banded-lateral-walk', 'monster-walk'],
+  'frontal-lunge': ['curtsy-lunge', 'lateral-lunge'],
+  'pullover': ['straight-arm-pulldown', 'dumbbell-pullover'],
+  'kettlebell-swing': ['kettlebell-swing'],
+  'good-morning': ['good-morning'],
+  'cable-pull-through': ['cable-pull-through'],
+  'sumo-deadlift': ['sumo-deadlift'],
+  'leg-extension': ['leg-extension'],
+  'wall-sit': ['wall-sit'],
+  'side-plank': ['side-plank'],
+  'bench-dip': ['bench-dip'],
+  'cable-crunch': ['cable-crunch'],
+  'upright-row': ['upright-row'],
+  'inverted-row': ['inverted-row'],
+  'stability-ball-leg-curl': ['stability-ball-leg-curl'],
+  'landmine-press': ['landmine-press'],
+  'front-rack-carry': ['front-rack-carry'],
+};
+
+const KEY_FOR_ID = Object.create(null);
+for (const [key, ids] of Object.entries(DIAGRAM_BY_ID)) {
+  for (const id of ids) KEY_FOR_ID[id] = key;
+}
+
 export function diagramKeyFor(exercise) {
   if (!exercise) return null;
-  const n = (exercise.name || '').toLowerCase();
-  const id = exercise.id || '';
-
-  const byName = [
-    [/hip thrust|glute bridge|frog pump/, 'hip-thrust'],
-    [/romanian deadlift|\brdl\b|good morning|pull-?through|back extension|deadlift/, 'romanian-deadlift'],
-    [/split squat|lunge|step-?up|step-?down/, 'split-squat'],
-    [/squat|leg press|leg extension/, 'squat'],
-    [/pulldown|pull-?up|chin-?up|pullover/, 'lat-pulldown'],
-    [/\brow\b/, 'seated-row'],
-    [/bench press|chest press|push-?up|\bfly\b|pec deck/, 'bench-press'],
-    [/overhead press|shoulder press|military|arnold/, 'overhead-press'],
-    [/lateral raise|side raise|upright row/, 'lateral-raise'],
-    [/face pull|rear delt|reverse pec/, 'face-pull'],
-    [/leg curl|nordic|ham(string)? curl/, 'leg-curl'],
-    [/abduction|clamshell|monster walk|lateral walk|fire hydrant|curtsy/, 'hip-abduction'],
-    [/plank|dead bug|hollow|pallof|bird dog|ab wheel|crunch|sit-?up|knee raise/, 'plank'],
-    [/carry|farmer|suitcase/, 'farmer-carry']
-  ];
-  for (const [re, key] of byName) if (re.test(n) || re.test(id)) return key;
-
-  const byPattern = {
-    hinge: 'romanian-deadlift',
-    squat: 'squat',
-    lunge: 'split-squat',
-    'pull-v': 'lat-pulldown',
-    'pull-h': 'seated-row',
-    'push-h': 'bench-press',
-    'push-v': 'overhead-press',
-    carry: 'farmer-carry',
-    core: 'plank'
-  };
-  return byPattern[exercise.pattern] || null;
+  const key = KEY_FOR_ID[exercise.id] || null;
+  // A key with no drawn shape yet resolves to no picture, never to a near-miss.
+  return key && DIAGRAMS[key] ? key : null;
 }
 
 /**
