@@ -19,6 +19,7 @@ import { warmupFor, renderWarmup } from './warmup.js';
 import { takeReadiness } from './today.js';
 import { RestTimer } from '../ui/timer.js';
 import { infoButton, infoActions } from '../ui/infosheet.js';
+import { voiceSupported, listen, parseSet, describeSet } from '../ui/voice.js';
 import { DIAGRAMS } from '../data/diagrams.js';
 import { diagramKeyFor, howToUrl } from '../data/info.js';
  import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
@@ -33,6 +34,9 @@ let focusIndex = 0;
 let plan = null;                // resolved {name, type, items[]}
 let targets = new Map();        // exerciseId -> progression target
 let drafts = new Map();         // exerciseId -> {weight, reps, seconds, distance}
+let setRowOpen = false;         // the steppers are opt-in; the compact bar is the default
+let listening = false;          // mic state, so the button can show it
+let stopListening = null;       // abort handle for an in-flight recognition
 let timer = null;
 let timerLeft = 0;
 let restingFor = null;
@@ -194,9 +198,57 @@ function logButton() {
   );
 }
 
+/** The microphone. Absent entirely on a browser that cannot listen, rather than dead. */
+function micButton() {
+  if (!voiceSupported()) return '';
+  return (
+    '<button type="button" class="set-mic' + (listening ? ' is-listening' : '') + '" ' +
+      'data-action="set-voice" aria-label="Say the set out loud">' +
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<rect x="9" y="2.5" width="6" height="11" rx="3"/>' +
+        '<path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>' +
+    '</button>'
+  );
+}
+
+/** What the draft currently says, in one short line, for the collapsed bar. */
+function draftSummary(item) {
+  const d = draftFor(item);
+  const track = item.exercise.track;
+  if (track === 'weight_reps') {
+    return (d.weight == null ? '—' : fmt.num(d.weight) + ' lb') +
+      ' <span class="set-bar-x">×</span> ' + (d.reps == null ? '—' : d.reps);
+  }
+  if (track === 'time_hold') return (d.seconds == null ? '—' : d.seconds + ' sec');
+  if (track === 'time_distance') {
+    return (d.seconds ? Math.round(d.seconds / 60) + ' min' : '—') +
+      (d.distance ? ' · ' + fmt.num(d.distance) + ' mi' : '');
+  }
+  return (d.reps == null ? '—' : d.reps + ' reps');
+}
+
 function inputRow(item) {
   const d = draftFor(item);
   const track = item.exercise.track;
+
+  // Collapsed is the default, and it is the whole point. Expanded, this row is 187px of
+  // steppers pinned over the movement she is trying to look at — she reported it as
+  // "weight and reps is in the way". Collapsed it is one 64px line: the numbers, the
+  // microphone, and the tick. Tap the numbers to get the steppers back.
+  if (!setRowOpen) {
+    return (
+      '<div class="set-row set-row-compact">' +
+        '<button type="button" class="set-bar" data-action="set-expand" ' +
+          'aria-expanded="false" aria-label="Change the weight or reps">' +
+          '<span class="set-bar-val num">' + draftSummary(item) + '</span>' +
+          '<span class="set-bar-hint">tap to change</span>' +
+        '</button>' +
+        micButton() +
+        logButton() +
+      '</div>'
+    );
+  }
 
   let fields = '';
   if (track === 'weight_reps') {
@@ -213,8 +265,15 @@ function inputRow(item) {
     fields = stepper('Reps', 'reps', d.reps, '', 'f-reps');
   }
 
-  return '<div class="set-row' + (fields.split('set-field').length - 1 === 1 ? ' one-field' : '') + '">' +
-    fields + logButton() + '</div>';
+  return '<div class="set-row set-row-open' +
+      (fields.split('set-field').length - 1 === 1 ? ' one-field' : '') + '">' +
+    '<button type="button" class="set-collapse" data-action="set-expand" aria-expanded="true" ' +
+      'aria-label="Hide the steppers">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+        'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M6 9l6 6 6-6"/></svg>' +
+    '</button>' +
+    fields + micButton() + logButton() + '</div>';
 }
 
 function loggedRows(item) {
@@ -600,6 +659,56 @@ export const actions = {
   'next-exercise'() {
     if (plan && focusIndex < plan.items.length - 1) { focusIndex++; stopRest(); }
     return Router.refresh();
+  },
+
+  'set-expand'() {
+    setRowOpen = !setRowOpen;
+    return Router.refresh();
+  },
+
+  // Speak the set. Fills the draft and shows what was heard; logging stays one deliberate
+  // tap away, because a misheard "fifty" for "fifteen" must never write itself to history.
+  'set-voice'() {
+    const item = currentItem();
+    if (!item) return;
+
+    if (listening) {
+      if (stopListening) stopListening();
+      listening = false;
+      return Router.refresh();
+    }
+
+    const track = item.exercise.track;
+    listening = true;
+    Router.refresh();
+
+    stopListening = listen({
+      onResult(best, alts) {
+        // Take the first alternative that parses to anything usable.
+        let parsed = null;
+        for (const a of (alts && alts.length ? alts : [best])) {
+          parsed = parseSet(a, track);
+          if (parsed) break;
+        }
+        if (!parsed) {
+          toast('Heard "' + String(best).slice(0, 40) + '" — try "one sixty five by five".', 'signal');
+          return;
+        }
+        const d = draftFor(item);
+        if (parsed.weight != null) d.weight = parsed.weight;
+        if (parsed.reps != null) d.reps = parsed.reps;
+        if (parsed.seconds != null) d.seconds = parsed.seconds;
+        if (parsed.distance != null) d.distance = parsed.distance;
+        toast(describeSet(parsed) + ' — tap the tick to log it.', 'accent');
+      },
+      onState(state, detail) {
+        if (state === 'listening') return;
+        listening = false;
+        stopListening = null;
+        if (state === 'error' && detail) toast(detail, 'signal');
+        Router.refresh();
+      },
+    });
   },
 
   'weight-up': () => bump('weight', 1),

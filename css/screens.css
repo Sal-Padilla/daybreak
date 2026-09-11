@@ -1082,3 +1082,118 @@ button.shape-row:active { background: var(--surface-2); }
 .warmup-actions .btn,
 .segmented-option,
 .btn-pair .btn { min-width: 0; }
+
+/* ============================================ the compact set row + voice
+
+   She reported the logging row as "clumpsy and hard to see — weight and reps is in the
+   way". It was: pinned to the bottom of the session view, the expanded steppers stand
+   187px tall and cover the movement diagram and the target line behind them.
+
+   So the row collapses. Default state is one line — the numbers, the microphone, the
+   tick — and the steppers are one tap away. Speaking the set is the fast path: it needs
+   no stepper at all. */
+
+/* Specificity note: .train.is-active .set-row (0,2,0) sets flex-wrap:wrap for the expanded
+   steppers, so the compact row has to match that weight to stay on one line. And .set-log
+   carries margin-left:auto, which eats the free space and forces a wrap even when the three
+   controls would otherwise fit — so it is cancelled here. */
+.set-row.set-row-compact,
+.train.is-active .set-row.set-row-compact {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: nowrap;
+}
+.set-row.set-row-compact .set-log,
+.train.is-active .set-row.set-row-compact .set-log { margin-left: 0; }
+
+.set-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--tap);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding: var(--sp-2);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.set-bar:active { border-color: var(--accent); }
+.set-bar-val {
+  /* Not --fs-num (24px): "165 lb × 5" needs 110px at that size and the bar only ever gets
+     the remainder after two 56px controls, which is 134px on a 375px screen — two pixels
+     short, so it ellipsised the reps away. --fs-h2 leaves real headroom, and still leaves
+     it legible at arm's length on a rack. */
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.set-bar-x { color: var(--text-dim); font-weight: 400; }
+.set-bar-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* The microphone. Same footprint as the tick so the row reads as two equal controls. */
+.set-mic {
+  flex: 0 0 auto;
+  width: var(--tap);
+  height: var(--tap);
+  min-width: var(--tap);
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+}
+.set-mic:active { border-color: var(--accent); color: var(--accent); }
+.set-mic.is-listening {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  animation: db-mic-pulse 1.1s ease-in-out infinite;
+}
+@keyframes db-mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 103, 79, .45); }
+  50%      { box-shadow: 0 0 0 9px rgba(196, 103, 79, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .set-mic.is-listening { animation: none; }
+}
+
+/* The expanded row keeps a chevron so the way back is visible, not guessed at. */
+.set-row-open { position: relative; }
+.set-collapse {
+  position: absolute;
+  top: 2px;
+  right: var(--sp-2);
+  width: 40px;
+  height: 26px;
+  min-width: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+}
+.set-row-open .set-mic { align-self: flex-end; }
