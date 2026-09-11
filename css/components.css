@@ -701,12 +701,13 @@ body.sheet-open,
 body.no-scroll { overflow: hidden; }
 
 .sheet-backdrop {
+  /* z-index 0, NOT a positive value. The backdrop and the panel are siblings inside
+     .sheet-layer, and the panel is z-index:auto. Any positive z-index here promotes the
+     backdrop above the panel: the sheet then renders behind its own dim scrim and the
+     backdrop swallows every tap, so the whole sheet looks greyed out and dead. */
   position: fixed;
   inset: 0;
-  z-index: 60;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  z-index: 0;
   padding: 0;
   background: rgba(36, 28, 38, .48);
   -webkit-backdrop-filter: blur(2px);
@@ -717,6 +718,7 @@ body.no-scroll { overflow: hidden; }
 
 .sheet {
   position: relative;
+  z-index: 1;              /* must stay above .sheet-backdrop */
   display: flex;
   flex-direction: column;
   width: 100%;
