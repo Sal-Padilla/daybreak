@@ -312,6 +312,25 @@ function diagramThumb(ex) {
     'data-id="' + esc(ex.id) + '" aria-label="See how to do ' + esc(ex.name) + '">' + d.svg + '</button>';
 }
 
+/** True for anything logged as time rather than repetitions. */
+function isTimed(exercise) {
+  const t = exercise && exercise.track;
+  return t === 'time_hold' || t === 'time_distance';
+}
+
+/**
+ * The "3 × 8–12" line under the exercise name. Reps are meaningless on a timed movement,
+ * so a walk reads "one session" and sprint rounds read "6 rounds", not "1 × 10–20".
+ */
+function setsAndRepsLabel(item) {
+  const ex = item.exercise;
+  if (isTimed(ex)) {
+    if (item.sets > 1) return item.sets + ' rounds';
+    return ex.track === 'time_distance' ? 'one session' : 'one hold';
+  }
+  return item.sets + ' × ' + item.reps[0] + '–' + item.reps[1];
+}
+
 function exerciseCard(item) {
   const ex = item.exercise;
   const t = targets.get(item.exerciseId);
@@ -322,11 +341,19 @@ function exerciseCard(item) {
   let targetLine = '';
   if (t) {
     const parts = [];
-    if (t.weight != null) parts.push(fmt.num(t.weight) + ' lb');
-    if (t.reps != null) parts.push(t.reps + ' reps');
-    parts.push(item.sets + ' sets');
-    if (t.rir != null) parts.push('leave ' + t.rir + ' in the tank');
-    targetLine = '<p class="exercise-target">' + esc(parts.join(' · ')) + '</p>';
+    // A time-based movement has no meaningful rep count and no reps-in-reserve. Showing
+    // "10 reps · leave 5 in the tank" on a sprint-interval session is not just noise, it
+    // is wrong — there is no rep to leave in any tank.
+    if (isTimed(ex)) {
+      if (t.seconds != null) parts.push(Math.round(t.seconds / 60) + ' min');
+      if (item.sets > 1) parts.push(item.sets + ' rounds');
+    } else {
+      if (t.weight != null) parts.push(fmt.num(t.weight) + ' lb');
+      if (t.reps != null) parts.push(t.reps + ' reps');
+      parts.push(item.sets + ' sets');
+      if (t.rir != null) parts.push('leave ' + t.rir + ' in the tank');
+    }
+    if (parts.length) targetLine = '<p class="exercise-target">' + esc(parts.join(' · ')) + '</p>';
   }
 
   return (
@@ -334,7 +361,7 @@ function exerciseCard(item) {
       '<header class="exercise-head">' +
         '<div>' +
           '<h2 class="exercise-name display">' + esc(ex.name) + '</h2>' +
-          '<p class="exercise-meta">' + esc(item.sets + ' × ' + item.reps[0] + '–' + item.reps[1]) +
+          '<p class="exercise-meta">' + esc(setsAndRepsLabel(item)) +
             ' · ' + esc(done + ' logged') + '</p>' +
         '</div>' +
         '<div class="exercise-actions">' +
