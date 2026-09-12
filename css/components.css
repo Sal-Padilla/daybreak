@@ -259,7 +259,8 @@
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #FFFFFF;
+  /* NOT #fff: in dark mode --accent lifts and white on it is 2.61:1. */
+  color: var(--on-accent);
 }
 .btn-primary:active,
 .btn-primary.is-pressed {

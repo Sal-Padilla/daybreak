@@ -241,7 +241,7 @@ body.is-onboarding .bottom-nav { display: none; }
 .scale-dot.is-selected {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 .scale-ends {
@@ -383,7 +383,7 @@ body.is-onboarding .bottom-nav { display: none; }
   display: grid; place-items: center;
   border-radius: var(--r-full);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
 }
@@ -455,7 +455,7 @@ body.is-onboarding .bottom-nav { display: none; }
 .day-single.is-rest .day-what { font-weight: 400; color: var(--text-dim); }
 .day-badge { flex: 0 0 auto; width: 10px; height: 10px; border-radius: var(--r-full); background: var(--border); }
 .day-badge.is-done { width: auto; height: auto; border-radius: var(--r-full);
-  background: var(--calm); color: #fff; font-size: var(--fs-xs); padding: 2px var(--sp-2); }
+  background: var(--calm); color: var(--on-accent); font-size: var(--fs-xs); padding: 2px var(--sp-2); }
 
 .class-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
 .class-row { display: flex; align-items: center; gap: var(--sp-2); }
@@ -714,10 +714,26 @@ button.shape-row:active { background: var(--surface-2); }
 .pillar-row.is-met .pillar-nums { color: var(--calm); font-weight: 600; }
 .pillar-bar { display: block; height: 10px; border-radius: var(--r-full); background: var(--surface-2); overflow: hidden; }
 .pillar-fill { display: block; height: 100%; border-radius: var(--r-full); background: var(--accent); transition: width 0.4s var(--ease); }
+/* One hue per pillar. Four bars in the same terracotta told her nothing about
+   WHICH of the four was short; four colours let the Shape screen be read at a
+   glance. All four clear AA on cream and are >=29 deltaE apart from each other —
+   see tools/check-contrast.mjs. */
+.pillar-fill.pillar-resistive { background: var(--pillar-resistive); }
+.pillar-fill.pillar-control   { background: var(--pillar-control); }
+.pillar-fill.pillar-cardio    { background: var(--pillar-cardio); }
+.pillar-fill.pillar-shape     { background: var(--pillar-shape); }
+
+/* Kept: other screens still use the tone-* names for their own bars. */
 .pillar-fill.tone-accent { background: var(--accent); }
 .pillar-fill.tone-calm   { background: var(--calm); }
 .pillar-fill.tone-signal { background: var(--signal); }
 .pillar-fill.tone-brand  { background: var(--brand); }
+
+/* The pillar name picks up its colour too, so the bar and the label agree. */
+.pillar-row:has(.pillar-resistive) .pillar-name { color: var(--pillar-resistive); }
+.pillar-row:has(.pillar-control)   .pillar-name { color: var(--pillar-control); }
+.pillar-row:has(.pillar-cardio)    .pillar-name { color: var(--pillar-cardio); }
+.pillar-row:has(.pillar-shape)     .pillar-name { color: var(--pillar-shape); }
 .pillar-blurb { font-size: var(--fs-xs); color: var(--text-dim); line-height: 1.45; }
 
 /* ==================================================== recommendation cards */
@@ -766,7 +782,7 @@ button.shape-row:active { background: var(--surface-2); }
 .slot-add {
   flex: 0 0 auto; min-height: 44px; min-width: 56px;
   border: 0; border-radius: var(--r-sm);
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--on-accent);
   font: inherit; font-size: var(--fs-sm); font-weight: 600;
   cursor: pointer;
 }
@@ -1035,7 +1051,7 @@ button.shape-row:active { background: var(--surface-2); }
   border: 0;
   border-radius: var(--r-full);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   cursor: pointer;
 }
 .set-row .set-log:active { background: var(--accent-press); }
@@ -1187,7 +1203,7 @@ button.shape-row:active { background: var(--surface-2); }
 .set-mic.is-listening {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   animation: db-mic-pulse 1.1s ease-in-out infinite;
 }
 @keyframes db-mic-pulse {

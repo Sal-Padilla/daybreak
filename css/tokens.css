@@ -2,7 +2,8 @@
 
 /* ---------------------------------------------------------------------------
    Harbor Dawn.
-   Sunrise over King Harbour: deep plum night, warm terracotta, sand, low gold.
+   Sunrise over King Harbour: deep plum night, warm terracotta, sand, low gold,
+   and the teal of the water once the light reaches it.
    Light-first on purpose. No indigo, no neon, no pure black, no pink.
 
    Rules that live here:
@@ -15,6 +16,23 @@
        tokens above them update for free.
      - Fonts: no CDN, no webfont file, no network. --font-display degrades to
        Georgia, which is still a serif and still differentiates from IronPulse.
+
+   CONTRAST — every ratio below is measured, not estimated.
+
+   The palette used to fail WCAG AA badly, and it was not an abstract failure:
+   Rocio reported the app's links as "greyed out and i cant pick anything". They
+   were not disabled. They were terracotta #C4674F on cream, which is 3.65:1 —
+   under the 4.5:1 floor for body text — so they read as dead controls. The old
+   gold was worse at 2.29:1. White on the old accent fill was 3.89:1, and in
+   dark mode white on the lifted accent was 3.07:1, so the primary button label
+   failed in both themes.
+
+   Every foreground token below now clears 4.5:1 on all three light grounds
+   (--bg #FBF7F4, --surface #FFFFFF, --surface-2 #F4EDE7) and on all three dark
+   grounds, and every filled control carries --on-accent, which flips to dark
+   ink in dark mode instead of staying white.
+
+   If you change a colour here, re-run tools/check-contrast.mjs before shipping.
 --------------------------------------------------------------------------- */
 
 :root{
@@ -26,18 +44,49 @@
   /* ink */
   --ink-900:#241C26; --ink-700:#3D3140; --ink-500:#6B5F6E; --ink-300:#9C93A0;
 
-  /* accents */
-  --clay-500:#C4674F; --clay-600:#A85440; --clay-100:#F5E2DB;
-  --plum-700:#4A2E52; --plum-500:#6B4675; --plum-100:#EDE3EF;
-  --gold-500:#D99A32; --gold-100:#FAEFD9;
-  --sage-500:#6E8B72; --sage-100:#E3EDE4;
-  --rose-500:#B3556B; --rose-100:#F6E4E8;
+  /* accents — the -500 of each ramp is a TEXT-SAFE value on cream, and also
+     safe as a fill under a white label. One value serves both jobs because
+     both constraints pull the same way. Ratios are vs --bg / white-on-fill. */
+  --clay-500:#AD5038;   /* 4.95  ·  white on it 5.27   (was #C4674F, 3.65 FAIL) */
+  --clay-600:#8F4230;   /* 6.59  ·  pressed                                     */
+  --clay-100:#F5E2DB;   /* tint; body ink on it 13.23                           */
+
+  --plum-700:#4A2E52;   /* 10.93                                                */
+  --plum-500:#5D3663;   /*  9.07                                                */
+  --plum-100:#EDE3EF;
+
+  --gold-500:#8F6418;   /* 4.92  ·  white on it 5.24   (was #D99A32, 2.29 FAIL) */
+  --gold-100:#FAEFD9;
+
+  --sage-500:#4F6B54;   /* 5.53  ·  white on it 5.89   (was #6E8B72, 3.52 FAIL) */
+  --sage-100:#E3EDE4;
+
+  --rose-500:#A94A61;   /* 5.13  ·  white on it 5.47   (was #B3556B, 4.45 FAIL) */
+  --rose-100:#F6E4E8;
+
+  --teal-500:#2A6F7A;   /* 5.40  ·  white on it 5.75   · new: the cardio pillar */
+  --teal-100:#E0EEF0;
 
   /* semantic — use these in components, not raw ramps */
   --bg:var(--sand-50); --surface:#FFFFFF; --surface-2:var(--sand-100);
   --border:var(--sand-200); --text:var(--ink-900); --text-dim:var(--ink-500);
   --accent:var(--clay-500); --accent-press:var(--clay-600); --accent-soft:var(--clay-100);
   --brand:var(--plum-700); --win:var(--gold-500); --calm:var(--sage-500); --signal:var(--rose-500);
+
+  /* The label on any filled control. NEVER hard-code #fff on a themed fill:
+     in dark mode the fill lifts and white drops to 2.61:1. */
+  --on-accent:#FFFFFF;  /* on --accent 5.27 · on --win 5.24 · on --calm 5.89 */
+
+  /* The four training pillars, each its own hue so Shape and Week read at a
+     glance rather than being four bars of the same clay. All AA on cream. */
+  --pillar-resistive:var(--clay-500);  /* 4.95 */
+  --pillar-control:var(--plum-500);    /* 9.07 */
+  --pillar-cardio:var(--teal-500);     /* 5.40 */
+  --pillar-shape:var(--gold-500);      /* 4.92 */
+  --pillar-resistive-soft:var(--clay-100);
+  --pillar-control-soft:var(--plum-100);
+  --pillar-cardio-soft:var(--teal-100);
+  --pillar-shape-soft:var(--gold-100);
 
   /* type */
   --font-display:'Fraunces',Georgia,'Times New Roman',serif;
@@ -57,9 +106,8 @@
 
 /* ---------------------------------------------------------------------------
    Dark — follows the OS, unless the profile has explicitly chosen light.
-   The listed overrides are verbatim from the contract. The ramp values beneath
-   them are re-pointed too, so a component that reaches for --accent-soft or
-   --sand-100 in dark gets a dark answer instead of a blown-out cream block.
+   The two blocks below MUST stay identical in their values; only the selector
+   differs, so an explicit choice wins over the OS in both directions.
 --------------------------------------------------------------------------- */
 
 @media (prefers-color-scheme: dark){
@@ -72,16 +120,31 @@
     /* ink — the ramp inverts: 900 is now the brightest */
     --ink-900:#F6EFEA; --ink-700:#D3C7CE; --ink-500:#A99DAE; --ink-300:#7C7185;
 
-    /* accents lifted ~8% luminance; the -100 tints become dark tints */
-    --clay-500:#D77A61; --clay-600:#C26A52; --clay-100:#3A2620;
-    --plum-700:#B69BBE; --plum-500:#9C81A6; --plum-100:#302339;
-    --gold-500:#E5AC4C; --gold-100:#3A2E1B;
-    --sage-500:#87A48B; --sage-100:#253022;
-    --rose-500:#C76B81; --rose-100:#3A222A;
+    /* accents lift on a dark ground; the -100 tints become dark tints.
+       Ratios are vs --bg #171018. */
+    --clay-500:#E08A70;  /* 7.15 */  --clay-600:#C9755C;  --clay-100:#3A2620;
+    --plum-700:#C0A8C7;  /* 8.60 */  --plum-500:#B69BBE;  --plum-100:#302339;
+    --gold-500:#E8B45E;  /* 9.90 */  --gold-100:#3A2E1B;
+    --sage-500:#93B097;  /* 7.92 */  --sage-100:#253022;
+    --rose-500:#D07E92;  /* 6.30 */  --rose-100:#3A222A;
+    --teal-500:#6FC0CD;  /* 8.99 */  --teal-100:#17323A;
 
     /* semantic */
     --bg:#171018; --surface:#221926; --surface-2:#2B2030; --border:#3A2D3F;
     --text:#F6EFEA; --text-dim:#A99DAE;
+
+    /* A lifted accent needs DARK ink on it, not white. White on --clay-500
+       here is 2.61:1; #171018 is 7.15:1. This is why --on-accent exists. */
+    --on-accent:#171018;
+
+    --pillar-resistive:var(--clay-500);
+    --pillar-control:var(--plum-500);
+    --pillar-cardio:var(--teal-500);
+    --pillar-shape:var(--gold-500);
+    --pillar-resistive-soft:var(--clay-100);
+    --pillar-control-soft:var(--plum-100);
+    --pillar-cardio-soft:var(--teal-100);
+    --pillar-shape-soft:var(--gold-100);
 
     /* shadow needs real black on a dark ground or it disappears */
     --shadow:0 1px 3px rgba(0,0,0,.44),0 4px 12px rgba(0,0,0,.34);
@@ -98,16 +161,31 @@
   /* ink — the ramp inverts: 900 is now the brightest */
   --ink-900:#F6EFEA; --ink-700:#D3C7CE; --ink-500:#A99DAE; --ink-300:#7C7185;
 
-  /* accents lifted ~8% luminance; the -100 tints become dark tints */
-  --clay-500:#D77A61; --clay-600:#C26A52; --clay-100:#3A2620;
-  --plum-700:#B69BBE; --plum-500:#9C81A6; --plum-100:#302339;
-  --gold-500:#E5AC4C; --gold-100:#3A2E1B;
-  --sage-500:#87A48B; --sage-100:#253022;
-  --rose-500:#C76B81; --rose-100:#3A222A;
+  /* accents lift on a dark ground; the -100 tints become dark tints.
+     Ratios are vs --bg #171018. */
+  --clay-500:#E08A70;  /* 7.15 */  --clay-600:#C9755C;  --clay-100:#3A2620;
+  --plum-700:#C0A8C7;  /* 8.60 */  --plum-500:#B69BBE;  --plum-100:#302339;
+  --gold-500:#E8B45E;  /* 9.90 */  --gold-100:#3A2E1B;
+  --sage-500:#93B097;  /* 7.92 */  --sage-100:#253022;
+  --rose-500:#D07E92;  /* 6.30 */  --rose-100:#3A222A;
+  --teal-500:#6FC0CD;  /* 8.99 */  --teal-100:#17323A;
 
   /* semantic */
   --bg:#171018; --surface:#221926; --surface-2:#2B2030; --border:#3A2D3F;
   --text:#F6EFEA; --text-dim:#A99DAE;
+
+  /* A lifted accent needs DARK ink on it, not white. White on --clay-500
+     here is 2.61:1; #171018 is 7.15:1. This is why --on-accent exists. */
+  --on-accent:#171018;
+
+  --pillar-resistive:var(--clay-500);
+  --pillar-control:var(--plum-500);
+  --pillar-cardio:var(--teal-500);
+  --pillar-shape:var(--gold-500);
+  --pillar-resistive-soft:var(--clay-100);
+  --pillar-control-soft:var(--plum-100);
+  --pillar-cardio-soft:var(--teal-100);
+  --pillar-shape-soft:var(--gold-100);
 
   /* shadow needs real black on a dark ground or it disappears */
   --shadow:0 1px 3px rgba(0,0,0,.44),0 4px 12px rgba(0,0,0,.34);

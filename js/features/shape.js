@@ -111,7 +111,7 @@ function pillarSection(pill) {
           infoButton('pillar', id, p.name) +
           '<span class="pillar-nums num">' + fmt.pct(pct) + '</span>' +
         '</div>' +
-        '<span class="pillar-bar"><span class="pillar-fill tone-' + esc(p.tone) +
+        '<span class="pillar-bar"><span class="pillar-fill pillar-' + esc(id) +
           '" style="width:' + (pct * 100) + '%"></span></span>' +
         '<span class="pillar-blurb">' + esc(PILLARS[id].blurb) + '</span>' +
       '</div>'
