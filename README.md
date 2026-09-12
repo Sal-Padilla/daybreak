@@ -1,4 +1,4 @@
-# Daybreak — v0.7.0
+# Daybreak — v0.8.0
 
 **Live: https://sal-padilla.github.io/daybreak/**
 
