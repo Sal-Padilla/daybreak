@@ -13,7 +13,7 @@ createServer(async (req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p.startsWith('/daybreak/')) p = p.slice('/daybreak'.length);
   if (p === '/' || p === '') p = '/index.html';
-  const file = join(ROOT, normalize(p).replace(/^(\.\.[/\])+/, ''));
+  const file = join(ROOT, normalize(p).replace(/^(\.\.[/\\])+/g, ''));
   try {
     const buf = await readFile(file);
     res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream',
