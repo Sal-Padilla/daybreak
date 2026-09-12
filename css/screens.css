@@ -1226,3 +1226,143 @@ button.shape-row:active { background: var(--surface-2); }
 .slot-row .slot-main { flex: 1 1 160px; min-width: 0; }
 .slot-row .slot-name { overflow-wrap: anywhere; }
 .slot-row .info-btn { margin-left: auto; }
+
+/* ============================================== month calendar + week ask */
+
+.view-toggle { margin: 0 0 var(--sp-4); }
+
+.cal-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.cal-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+}
+
+.cal-heads,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.cal-head {
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  padding-bottom: var(--sp-1);
+}
+
+/* A cell must stay square-ish and tappable at 320px: 7 columns of ~40px. */
+.cal-cell {
+  position: relative;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.cal-cell.is-blank { background: none; border-color: transparent; cursor: default; }
+.cal-num { font-size: var(--fs-sm); line-height: 1; }
+
+/* The shading she asked for: a day with a class is filled, not merely dotted. */
+.cal-cell.has-class { background: var(--accent-soft); border-color: var(--accent-soft); }
+.cal-cell.is-booked { border-color: var(--calm); }
+.cal-cell.is-today  { border-color: var(--accent); border-width: 2px; }
+.cal-cell.is-past   { opacity: 0.55; }
+.cal-cell:active    { border-color: var(--accent); }
+
+.cal-dots { display: flex; gap: 2px; }
+.cal-dot {
+  width: 4px; height: 4px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+}
+
+.cal-key {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin: var(--sp-4) 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+.cal-swatch {
+  width: 14px; height: 14px;
+  border-radius: 4px;
+  border: 1.5px solid transparent;
+  background: var(--surface-2);
+}
+.cal-swatch.has-class { background: var(--accent-soft); }
+.cal-swatch.is-booked { background: var(--accent-soft); border-color: var(--calm); }
+.cal-note { font-size: var(--fs-sm); color: var(--text-dim); margin: 0 0 var(--sp-4); }
+
+/* The day sheet behind a calendar cell */
+.day-class {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+}
+.day-class-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.day-class-name { font-weight: 600; overflow-wrap: anywhere; }
+.day-class-meta { font-size: var(--fs-sm); color: var(--text-dim); }
+.day-class-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0 var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.day-class-acts > .btn { flex: 1 1 140px; }
+
+/* "Does this week work?" — only on a week she is looking ahead to. */
+.week-ask {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+.week-ask-q { margin: 0 0 var(--sp-1); font-size: var(--fs-body); line-height: 1.45; }
+.week-ask-sub { margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--text-dim); }
+.week-ask-acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.week-ask-acts > .btn { flex: 1 1 140px; }
+.week-confirmed {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+/* ================================ the three-day Bay Club booking reminder */
+
+.book-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.book-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.book-row:last-child { border-bottom: 0; }
+.book-main { flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.book-name { font-weight: 600; overflow-wrap: anywhere; }
+.book-when { font-size: var(--fs-sm); color: var(--text-dim); }

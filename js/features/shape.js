@@ -21,6 +21,7 @@ import { infoButton, infoActions } from '../ui/infosheet.js';
 import { buildReport, renderReport, reportHtml, shareReport, copyReport, smsReport, enableNudge, mondayOf }
   from './report.js';
 import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
+import { classesForWeek } from '../data/schedule.js';
 
 export const id = 'shape';
 export const title = 'Shape';
@@ -367,7 +368,7 @@ export async function render(el) {
   }
   const shape = weeklyShapeMap(done, sets, classes, dials);
   const pill = weeklyPillars(done, sets, byId, classById, dials);
-  const week = buildWeek(profile, classes, dials, weekStart);
+  const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart);
   const recs = recommendations({ profile, dials, week, pillars: pill, shape, classes, sessions });
 
   const measurements = ((await DB.getAll('measurements')) || [])

@@ -14,6 +14,9 @@ import { byId } from '../data/exercises.js';
 import { recommendations } from '../engine/recommend.js';
 import { infoActions } from '../ui/infosheet.js';
 import { card, btn, toast, fmt } from '../ui/components.js';
+import {
+  classesForWeek, needsBooking, parseISO, daysBetween,
+} from '../data/schedule.js';
 
 export const id = 'today';
 export const title = 'Today';
@@ -288,6 +291,56 @@ function noteCard(profile, day, plan, dials) {
 
 // -------------------------------------------------------------------- render
 
+/**
+ * "sent message/comunication 3 days in advanced to sign up (bay club connect) for the
+ * class before it fills-up"
+ *
+ * An installed web app cannot reliably wake itself up and send anything — no background
+ * push without a server, and iOS evicts storage from apps left unopened. Pretending
+ * otherwise would be the app lying to her. What it CAN do honestly is: the moment she
+ * opens it, tell her exactly what needs booking in the next three days, and hand her a
+ * message she can send herself. She opens this app every training morning, so in practice
+ * the reminder lands days before the class fills.
+ *
+ * A local notification is offered too, but only as a bonus and only if she grants it —
+ * see 'book-remind' below.
+ */
+function bookingCard(due, todayISO) {
+  if (!due.length) return '';
+
+  const rows = due.map((o) => {
+    const f = classById(o.formatId);
+    const when = parseISO(o.occurrenceDate);
+    const dayName = when
+      ? when.toLocaleDateString(undefined, { weekday: 'long' })
+      : o.occurrenceDate;
+    const inDays = daysBetween(todayISO, o.occurrenceDate);
+    return (
+      '<li class="book-row">' +
+        '<div class="book-main">' +
+          '<span class="book-name">' + esc(f ? f.name : 'Class') + '</span>' +
+          '<span class="book-when">' + esc(dayName) + ' ' + clockLabel(o.time) +
+            ' · ' + (inDays === 1 ? 'tomorrow' : 'in ' + inDays + ' days') + '</span>' +
+        '</div>' +
+        btn({ label: 'Booked', action: 'mark-booked', variant: 'ghost', size: 'md',
+              data: { id: o.id, date: o.occurrenceDate } }) +
+      '</li>'
+    );
+  }).join('');
+
+  return card({
+    tone: 'win',
+    title: due.length === 1 ? 'Book this one' : 'Book these ' + due.length,
+    subtitle: 'Bay Club classes fill. Reserve them on Bay Club Connect.',
+    body: '<ul class="book-list">' + rows + '</ul>',
+    footer:
+      btn({ label: 'Send myself the list', action: 'book-share', variant: 'primary',
+            size: 'md', full: true }) +
+      btn({ label: 'Remind me on this phone', action: 'book-remind', variant: 'ghost',
+            size: 'md', full: true }),
+  });
+}
+
 export async function render(el) {
   const profile = Store.get('profile') || await DB.getProfile();
   const dials = Store.get('dials');
@@ -297,7 +350,7 @@ export async function render(el) {
 
   const weekStart = mondayOf(today);
   const classes = await DB.getAll('classes');
-  const week = buildWeek(profile, classes || [], dials, weekStart);
+  const week = buildWeek(profile, classesForWeek(classes || [], weekStart), dials, weekStart);
 
   const weekEnd = week[6].date;
   const sessions = await DB.getSessionsInRange(weekStart, weekEnd);
@@ -327,6 +380,9 @@ export async function render(el) {
 
   const proteinHit = await DB.getPref('protein:' + today, null);
 
+  // Classes needing a Bay Club Connect booking in the next three days.
+  const dueToBook = needsBooking(classes || [], today, 3);
+
   el.innerHTML =
     '<div class="today">' +
       '<header class="today-head">' +
@@ -336,6 +392,7 @@ export async function render(el) {
       heroCard(profile, day, plan, hasOpen) +
       (day && day.session && !hasOpen ? readinessCard() : '') +
       noteCard(profile, day, plan, dials) +
+      bookingCard(dueToBook, today) +
       weekStrip(week, shape) +
       (topRec
         ? card({
@@ -359,6 +416,70 @@ export async function render(el) {
 
 export const actions = {
   ...infoActions,
+
+  async 'mark-booked'(node) {
+    const c = await DB.get('classes', node.dataset.id);
+    if (!c) return;
+    const dates = Array.isArray(c.bookedDates) ? c.bookedDates.slice() : [];
+    if (!dates.includes(node.dataset.date)) dates.push(node.dataset.date);
+    await DB.put('classes', { ...c, bookedDates: dates });
+    toast('Good. That one will stop asking.', 'calm');
+    return Router.refresh();
+  },
+
+  async 'book-share'() {
+    const today = DB.todayISO();
+    const classes = (await DB.getAll('classes')) || [];
+    const due = needsBooking(classes, today, 3);
+    if (!due.length) { toast('Nothing to book.', 'calm'); return; }
+
+    const lines = due.map((o) => {
+      const f = classById(o.formatId);
+      const d = parseISO(o.occurrenceDate);
+      const when = d ? d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+        : o.occurrenceDate;
+      return '· ' + (f ? f.name : 'Class') + ' — ' + when + ' ' + clockLabel(o.time);
+    });
+    const text = 'Book on Bay Club Connect:\n' + lines.join('\n');
+
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Classes to book', text }); return; } catch (_) { /* cancelled */ }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Copied. Paste it wherever you will see it.', 'calm');
+    } catch (_) {
+      window.location.href = 'sms:?body=' + encodeURIComponent(text);
+    }
+  },
+
+  // A local notification, scheduled only while the app is open. This is deliberately
+  // modest: without a server there is no push, and a setTimeout dies when the tab is
+  // discarded. So it is offered as "while this stays open", never as a promise.
+  async 'book-remind'() {
+    if (!('Notification' in window)) {
+      toast('This browser cannot show reminders. The list above is the reliable one.', 'signal');
+      return;
+    }
+    let perm = Notification.permission;
+    if (perm === 'default') {
+      try { perm = await Notification.requestPermission(); } catch (_) { perm = 'denied'; }
+    }
+    if (perm !== 'granted') {
+      toast('Reminders are blocked for this site. You can turn them on in browser settings.', 'signal');
+      return;
+    }
+    await DB.setPref('notify:booking', true);
+    try {
+      new Notification('Daybreak', {
+        body: 'I will remind you here when a class needs booking.',
+        tag: 'daybreak-booking',
+      });
+    } catch (_) { /* some browsers require a service worker registration */ }
+    toast('On. You will get a nudge when you open the app with something to book.', 'calm');
+    return Router.refresh();
+  },
+
 
   'go-train': () => Router.go('train'),
   'go-shape': () => Router.go('shape'),

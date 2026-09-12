@@ -22,6 +22,7 @@ import { infoButton, infoActions } from '../ui/infosheet.js';
 import { voiceSupported, listen, parseSet, describeSet } from '../ui/voice.js';
 import { DIAGRAMS } from '../data/diagrams.js';
 import { diagramKeyFor, howToUrl } from '../data/info.js';
+import { classesForWeek } from '../data/schedule.js';
  import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
 
 export const id = 'train';
@@ -73,7 +74,8 @@ function elapsedOf(session) {
 async function todaysScheduledSession(profile, dials) {
   const today = DB.todayISO();
   const classes = await DB.getAll('classes');
-  const week = buildWeek(profile, classes || [], dials, mondayOf(today));
+  const wkStart = mondayOf(today);
+  const week = buildWeek(profile, classesForWeek(classes || [], wkStart), dials, wkStart);
   const day = week.find((d) => d.date === today);
   return day && day.session ? day.session : null;
 }
