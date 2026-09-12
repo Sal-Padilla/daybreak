@@ -12,7 +12,7 @@ import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/c
 export const id = 'me';
 export const title = 'Me';
 
-const VERSION = '0.1.0';
+const VERSION = '0.7.0';
 
 const STAGE_LABEL = {
   cycling: 'Regular cycles',

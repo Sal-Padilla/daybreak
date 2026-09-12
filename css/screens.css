@@ -737,7 +737,17 @@ button.shape-row:active { background: var(--surface-2); }
 
 /* ================================================ the class schedule picker */
 
+/* Seven day chips need 483px and the sheet gives them 310, so .chip-row.nowrap put
+   Friday, Saturday and Sunday behind a sideways scroll with no visual hint it was there.
+   Sunday is where the new Bay Club classes live, so it was the least findable day on the
+   least findable row. Wrap to two lines instead: all seven visible, nothing to discover. */
 .day-tabs { margin-bottom: var(--sp-4); }
+.chip-row.day-tabs {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  row-gap: var(--sp-2);
+}
+.chip-row.day-tabs > .chip { flex: 1 0 auto; }
 
 .slot-list { list-style: none; margin: 0 0 var(--sp-4); padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
 .slot-row {
@@ -1206,3 +1216,13 @@ button.shape-row:active { background: var(--surface-2); }
   padding: 0;
 }
 .set-row-open .set-mic { align-self: flex-end; }
+
+/* A class slot is [time][name + studio + badges][i][Add]. Inside a bottom sheet on a
+   375px phone that row is 310px wide, and the fixed 62px time plus two 56px controls
+   leave the name just 74px — "LES MILLS Strength Development" came out six lines tall.
+   Let the row wrap: the name keeps the whole first line and the two controls drop
+   underneath, right-aligned. */
+.slot-row { flex-wrap: wrap; }
+.slot-row .slot-main { flex: 1 1 160px; min-width: 0; }
+.slot-row .slot-name { overflow-wrap: anywhere; }
+.slot-row .info-btn { margin-left: auto; }
