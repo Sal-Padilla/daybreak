@@ -531,16 +531,21 @@ export async function render(el) {
 }
 
 async function resolvePlanForSession(profile, session) {
-  if (session.programDayKey) {
-    const p = planFor(profile, {
-      programDayKey: session.programDayKey,
-      blockSize: session.blockSize,
-      type: session.type,
-      name: session.name,
-      estMinutes: session.estMinutes,
-    });
-    if (p.items.length) return p;
-  }
+  // Ask the planner FIRST, whatever kind of session this is. This used to be gated on
+  // session.programDayKey, which meant the two weekend sessions — Saturday's sprint
+  // intervals and Sunday's walk, both of which deliberately have no program day — fell
+  // straight through to the "rebuild from logged sets" branch below. On a fresh session
+  // nothing is logged yet, so both rendered as "Empty session. Add the first exercise."
+  const p = planFor(profile, {
+    programDayKey: session.programDayKey,
+    blockSize: session.blockSize,
+    type: session.type,
+    name: session.name,
+    estMinutes: session.estMinutes,
+    note: session.note,
+    focus: session.focus,
+  });
+  if (p.items.length) return p;
   // Empty or ad-hoc session: rebuild the item list from whatever has been logged.
   const logged = await DB.getSessionSets(session.id);
   const seen = [];
