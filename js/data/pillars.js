@@ -20,7 +20,7 @@ export const PILLARS = {
     short: 'Strength',
     tone: 'accent',
     blurb: 'Loading muscle hard enough that it has to adapt.',
-    why: 'This is the non-negotiable one. Through perimenopause you can lose ten to twenty per cent of your lean muscle, and muscle is what holds your metabolism, your strength and your bone density up. Heavy loading is the only signal that reliably reverses it — and heavy means genuinely heavy, not a light bar for sixty reps.'
+    why: 'This is the non-negotiable one. Through perimenopause you can lose ten to twenty percent of your lean muscle, and muscle is what holds your metabolism, your strength and your bone density up. Heavy loading is the only signal that reliably reverses it — and heavy means genuinely heavy, not a light bar for sixty reps.'
   },
   control: {
     id: 'control',

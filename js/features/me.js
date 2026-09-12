@@ -150,7 +150,7 @@ export async function render(el) {
         body:
           '<p class="muted">Roughly four in ten women who lift report leaking, and squats are the ' +
           'most common trigger. It is not a reason to stop lifting — it is a muscle group that ' +
-          'trains like any other, and a pelvic floor physiotherapist can usually sort it out.</p>' +
+          'trains like any other, and a pelvic floor physical therapist can usually sort it out.</p>' +
           (profile.pelvicFloor === 'sometimes' || profile.pelvicFloor === 'often'
             ? '<p class="lede">I am keeping impact work lower and cueing you to exhale through ' +
               'the hard part of every heavy set.</p>' : ''),
@@ -219,13 +219,19 @@ export async function render(el) {
         subtitle: 'Version ' + VERSION,
         body:
           '<p class="safety">Daybreak gives general fitness guidance. It is not medical advice and ' +
-          'does not diagnose or treat anything. Talk to a clinician before starting if you have a ' +
-          'heart condition, joint injury, osteoporosis, or you’re unsure. If you leak urine when ' +
-          'you lift, jump, cough or sneeze, that’s common and usually treatable — a pelvic floor ' +
-          'physiotherapist can help.</p>' +
+          'does not diagnose or treat anything. Talk to a clinician before you start — and again ' +
+          'before the loads get heavy — if you have a heart condition, a joint injury, osteopenia ' +
+          'or osteoporosis, high blood pressure, or you’re simply not sure. This app adds weight ' +
+          'and adds impact on purpose, week after week, so "cleared to exercise" once is not the ' +
+          'same as cleared for where this goes.</p>' +
+          '<p class="safety">Stop and get seen if you get chest pain or pressure, feel faint or ' +
+          'unusually short of breath, or pick up a joint pain that does not settle within a few ' +
+          'days. If you leak urine when you lift, jump, cough or sneeze, that’s common and usually ' +
+          'treatable — a pelvic floor physical therapist can help, and it is worth doing rather ' +
+          'than working around.</p>' +
           '<p class="muted">Built around the evidence on training through perimenopause: heavier ' +
-          'loads, more volume, impact work for bone, and enough protein to hold onto what you build. ' +
-          'The programming rationale is in the project plan.</p>',
+          'loads, more volume, impact work for bone, and enough protein to hold onto what you ' +
+          'build. Every exercise carries an "i" that explains what it changes and why.</p>',
         footer: btn({ label: 'Start over', action: 'reset', variant: 'danger', size: 'md', full: true }),
       }) +
     '</div>';

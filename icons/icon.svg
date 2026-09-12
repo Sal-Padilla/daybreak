@@ -1,11 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Daybreak">
+  <!-- Sunrise over a barbell: the horizon line IS the bar.
+       Keep this in step with the LAYERS array in tools/make-icons.mjs, which rasterises
+       the PNGs from the same 512-unit geometry. These are the vivid Harbor Dawn values,
+       not the AA-corrected text palette — an icon is a mark, not body copy. -->
   <rect width="512" height="512" rx="112" fill="#FBF7F4"/>
-  <!-- horizon -->
-  <rect x="72" y="332" width="368" height="26" rx="13" fill="#4A2E52"/>
-  <!-- the sun, rising -->
-  <path d="M256 128a132 132 0 0 1 132 132H124A132 132 0 0 1 256 128Z" fill="#C4674F"/>
-  <!-- first light -->
-  <rect x="120" y="288" width="128" height="22" rx="11" fill="#D99A32"/>
-  <rect x="272" y="288" width="120" height="22" rx="11" fill="#D99A32"/>
-  <rect x="152" y="392" width="208" height="20" rx="10" fill="#E7DBD1"/>
+  <!-- first light, as a rim behind the sun -->
+  <path d="M96 330a160 160 0 0 1 320 0Z" fill="#D99A32"/>
+  <!-- the sun -->
+  <path d="M112 330a144 144 0 0 1 288 0Z" fill="#C4674F"/>
+  <!-- the bar -->
+  <rect x="88" y="316" width="336" height="26" rx="13" fill="#4A2E52"/>
+  <!-- the plates -->
+  <rect x="92" y="272" width="42" height="118" rx="18" fill="#4A2E52"/>
+  <rect x="378" y="272" width="42" height="118" rx="18" fill="#4A2E52"/>
 </svg>

@@ -45,13 +45,18 @@ function halfDisc(cx, cy, r) {
 }
 
 // Drawn back to front, in the same 512-unit space as icon.svg.
+//
+// Sunrise over a barbell. The previous version stacked a dome, two gold bars, a dark bar
+// and a pale bar, which at home-screen size read as a hamburger rather than a sunrise.
+// This is one horizon line and one sun: the horizon IS the barbell, which is the whole
+// idea of the app in a single mark, and there is nothing left to mistake for a bun.
 const LAYERS = [
   { test: () => true,                              colour: C.sand },      // full bleed
-  { test: halfDisc(256, 260, 132),                 colour: C.clay },      // the sun
-  { test: roundRect(120, 288, 128, 22, 11),        colour: C.gold },      // first light
-  { test: roundRect(272, 288, 120, 22, 11),        colour: C.gold },
-  { test: roundRect(72, 332, 368, 26, 13),         colour: C.plum },      // horizon
-  { test: roundRect(152, 392, 208, 20, 10),        colour: C.sandLine },  // foreground
+  { test: halfDisc(256, 330, 160),                 colour: C.gold },      // first light, as a rim
+  { test: halfDisc(256, 330, 144),                 colour: C.clay },      // the sun
+  { test: roundRect(88, 316, 336, 26, 13),         colour: C.plum },      // the bar
+  { test: roundRect(92, 272, 42, 118, 18),         colour: C.plum },      // plates
+  { test: roundRect(378, 272, 42, 118, 18),        colour: C.plum },
 ];
 
 /* ------------------------------------------------------------ rasteriser */

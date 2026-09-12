@@ -288,7 +288,7 @@ export function reportHtml(report) {
           'and building shape at the same time, and it is exactly what the scale cannot show you.</p>'
         : '');
   } else {
-    bodyBlock = '<p class="muted">No measurements logged yet. Waist and hips, once a fortnight, ' +
+    bodyBlock = '<p class="muted">No measurements logged yet. Waist and hips, every two weeks, ' +
                 'tell you far more than daily weigh-ins ever will.</p>';
   }
 

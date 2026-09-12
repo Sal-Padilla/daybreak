@@ -197,7 +197,7 @@ function measureSection(list) {
     return card({
       title: 'Measurements',
       body:
-        '<p class="lede">Waist and hips, once a fortnight. That is it.</p>' +
+        '<p class="lede">Waist and hips, every two weeks. That is it.</p>' +
         '<p class="muted">Waist-to-hip ratio tells you what is actually happening to your shape. ' +
         'The scale cannot — it can sit still for six weeks while your body changes underneath it.</p>',
       footer: btn({ label: 'Log measurements', action: 'log-measure', variant: 'primary', size: 'lg', full: true }),
