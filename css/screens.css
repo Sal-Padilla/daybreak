@@ -1382,3 +1382,55 @@ button.shape-row:active { background: var(--surface-2); }
 .book-main { flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .book-name { font-weight: 600; overflow-wrap: anywhere; }
 .book-when { font-size: var(--fs-sm); color: var(--text-dim); }
+
+/* The warm-up movement picture. Capped hard: this screen also carries a countdown,
+   a cue, a progress bar and three controls, and the picture must not push the Next
+   button off a small phone. */
+.warmup-figure {
+  margin: var(--sp-3) auto 0;
+  max-width: 240px;
+}
+.warmup-figure svg.exdiagram { display: block; width: 100%; height: auto; }
+@media (max-height: 700px) {
+  /* 140px keeps the picture clear of the sticky footer at 320x640/22px; at 180px the
+     footer clipped its bottom 22px. */
+  .warmup-figure { max-width: 140px; }
+}
+
+/* The warm-up footer must never fall below the fold — this is a timed screen and she
+   should not have to scroll a countdown to find Next.
+
+   .warmup-links was a nowrap flex row of three links squeezed into 288px, so each one
+   wrapped internally to three lines and the row stood 117px tall, pushing everything
+   under it out of sight at 320x640/22px. Let the row wrap instead and tighten the
+   targets, then pin the whole footer. */
+.warmup-links {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+  width: 100%;
+}
+.warmup-links .link-quiet {
+  padding: var(--sp-2) var(--sp-1);
+  min-height: 40px;
+}
+.warmup-foot {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding-top: var(--sp-2);
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+  box-shadow: 0 -14px 18px -10px var(--bg);
+}
+.warmup-stage { min-height: 0; }
+
+/* At 320x640 with a 22px system font there is not room for a 3.5rem clock, a picture,
+   two buttons and three links. The clock is the most compressible of those — it is still
+   the largest thing on the screen at 2.4rem — and the stage padding goes too. Measured:
+   this is what lets the picture and the whole footer share one 640px viewport. */
+@media (max-height: 700px) {
+  .warmup-clock { font-size: 2.4rem; }
+  .warmup-stage { padding: var(--sp-3) 0; gap: var(--sp-2); }
+  .warmup-name { font-size: var(--fs-h2); }
+  .warmup-total { display: none; }
+}

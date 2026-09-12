@@ -7,6 +7,7 @@
 // session needs 5–8. Part one — raising core temperature — is the one that actually matters.
 
 import { btn } from '../ui/components.js';
+import { DIAGRAMS } from '../data/diagrams.js';
 
 const RAISE = {
   name: 'Easy bike or row',
@@ -59,6 +60,31 @@ const RAMP = {
   part: 'ramp',
   seconds: 180,
 };
+
+/**
+ * A warm-up movement is exactly the kind she has never done — nobody arrives knowing what
+ * a 90/90 hip switch is. The main session got pictures; this screen had none at all.
+ *
+ * We only have artwork for two of these twelve shapes, and a wrong picture is worse than
+ * none, so the rest get no drawing. What every one of them DOES get is a link out to a
+ * demonstration, which is the honest answer when the app ships no video.
+ */
+const WARMUP_SHAPE = {
+  'Dead bug': 'supine-core',
+  'Glute bridge': 'hip-thrust',
+};
+
+function warmupDiagram(name) {
+  const key = WARMUP_SHAPE[name];
+  const d = key && DIAGRAMS[key];
+  if (!d || !d.svg) return '';
+  return '<figure class="warmup-figure">' + d.svg + '</figure>';
+}
+
+function warmupWatchUrl(name) {
+  return 'https://www.youtube.com/results?search_query=' +
+    encodeURIComponent(name + ' exercise how to');
+}
 
 function familyFor(sessionType) {
   const t = String(sessionType || '').toLowerCase();
@@ -150,6 +176,7 @@ export function renderWarmup(el, plan, onDone) {
           '<h1 class="warmup-name display">' + it.name + '</h1>' +
           '<div class="warmup-clock num' + (paused ? ' is-paused' : '') + '">' + mmss(remaining) + '</div>' +
           '<p class="warmup-cue">' + it.cue + '</p>' +
+          warmupDiagram(it.name) +
           (isRaise
             ? '<p class="warmup-flag">This is the one that matters. At 5:30 AM your core ' +
               'temperature is at its lowest point of the day — everything after this is safer once ' +
@@ -168,8 +195,9 @@ export function renderWarmup(el, plan, onDone) {
           '</div>' +
           '<div class="warmup-links">' +
             (current.trimmed ? '' :
-              '<button type="button" class="link-quiet" data-action="wu-short">Short version</button>') +
-            '<button type="button" class="link-quiet" data-action="wu-skip">Skip the warm-up</button>' +
+              '<button type="button" class="link-quiet" data-action="wu-short">Shorter</button>') +
+            '<a class="link-quiet" href="' + warmupWatchUrl(it.name) + '" target="_blank" rel="noopener noreferrer">Show me</a>' +
+            '<button type="button" class="link-quiet" data-action="wu-skip">Skip</button>' +
           '</div>' +
           '<p class="warmup-total">' + mmss(current.totalSeconds - doneSec) + ' left of ' +
             current.totalMinutes + ' min</p>' +
