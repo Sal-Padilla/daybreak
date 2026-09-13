@@ -249,7 +249,7 @@ const DIAGRAM_BY_ID = {
   'calf-raise': ['standing-calf-raise', 'seated-calf-raise', 'single-leg-calf-raise',
                  'leg-press-calf-raise'],
   'jump-land': ['box-jump', 'broad-jump', 'split-jump', 'pogo-hop', 'jump-rope',
-                'heel-drop', 'drop-squat'],
+                'heel-drop', 'drop-squat', 'skater-jump'],
   'supine-core': ['dead-bug', 'hollow-hold', 'lying-leg-raise', 'reverse-crunch'],
   'anti-rotation': ['pallof-press', 'half-kneeling-pallof-press', 'standing-cable-woodchop'],
   'high-plank': ['ab-wheel-rollout', 'stir-the-pot', 'plank-shoulder-tap'],
@@ -281,6 +281,16 @@ const DIAGRAM_BY_ID = {
   'stability-ball-leg-curl': ['stability-ball-leg-curl'],
   'landmine-press': ['landmine-press'],
   'front-rack-carry': ['front-rack-carry'],
+  // Cardio machines. She is going to be standing in front of one of these at 5:30am
+  // wondering which is which, so they get pictures like everything else.
+  'bike': ['stationary-bike', 'bike-sprint-intervals'],
+  'rower': ['rower', 'rower-sprint-intervals'],
+  'treadmill': ['treadmill-walk', 'treadmill-incline-walk', 'treadmill-run'],
+  'outdoor-walk': ['outdoor-walk'],
+  'stair-climber': ['stair-climber'],
+  'elliptical': ['elliptical'],
+  // A skater jump is a jump and a landing, sideways. The teaching point — absorb it
+  // softly through a bent knee — is identical, so it shares the shape.
 };
 
 const KEY_FOR_ID = Object.create(null);
