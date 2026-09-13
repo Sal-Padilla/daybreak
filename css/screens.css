@@ -1542,3 +1542,15 @@ button.shape-row:active { background: var(--surface-2); }
 @media (max-width: 360px) {
   .option-thumb { width: 56px; }
 }
+
+/* Two steppers side by side on a 375px screen left the number itself 34px wide, squeezed
+   between two 56px buttons. The buttons only need 44px to stay a legal tap target, so
+   they give 8px each back to the field you actually read and type into — 34px -> 50px.
+   The expanded row is opt-in now (the compact bar is the default), so this only affects
+   the moment she has deliberately asked for the steppers. */
+.set-row .stepper-btn {
+  width: 48px;
+  min-width: 48px;
+  flex: 0 0 48px;
+}
+.set-row .stepper-input { min-width: 44px; }
