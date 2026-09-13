@@ -1514,3 +1514,31 @@ button.shape-row:active { background: var(--surface-2); }
   .ib-hero { flex-wrap: wrap; }
   .ib-pair { flex: 1 1 100%; }
 }
+
+/* A picker row that shows the movement, not just its name. */
+.option-row.has-thumb {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: left;
+}
+.option-thumb {
+  flex: 0 0 auto;
+  width: 72px;
+  display: block;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  padding: 2px;
+}
+.option-thumb svg.exdiagram { display: block; width: 100%; height: auto; }
+.option-thumb.is-empty {
+  height: 40px;
+  background: var(--surface-2);
+}
+.option-row.has-thumb .option-row-main { flex: 1 1 auto; min-width: 0; }
+.option-row.has-thumb .option-row-label { overflow-wrap: anywhere; }
+
+/* At a large system font the thumbnail would squeeze the name to nothing. */
+@media (max-width: 360px) {
+  .option-thumb { width: 56px; }
+}

@@ -645,6 +645,31 @@ function setField(field, raw) {
   if (field === 'minutes') d.seconds = v == null ? null : v * 60; else d[field] = v;
 }
 
+/**
+ * One row in the swap or add-exercise picker, WITH the movement picture.
+ *
+ * "when choosing an exercise to swap it needs to have an image to know what user is
+ * swapping for" — exactly right. A list of names asks her to already know what a
+ * chest-supported row is, which is the thing she is using the app to find out. Every row
+ * carries its shape; a row whose shape is not drawn yet gets a quiet placeholder rather
+ * than a borrowed picture of a different movement.
+ */
+function pickerRow(ex, action, note) {
+  const key = diagramKeyFor(ex);
+  const d = key && DIAGRAMS[key];
+  const thumb = d && d.svg
+    ? '<span class="option-thumb">' + d.svg + '</span>'
+    : '<span class="option-thumb is-empty" aria-hidden="true"></span>';
+  return '<button type="button" class="option-row has-thumb" data-action="' + action + '" ' +
+      'data-eid="' + esc(ex.id) + '">' +
+      thumb +
+      '<span class="option-row-main">' +
+        '<span class="option-row-label">' + esc(ex.name) + '</span>' +
+        '<span class="option-row-note">' + esc(note || '') + '</span>' +
+      '</span>' +
+    '</button>';
+}
+
 export const actions = {
   ...infoActions,
 
@@ -860,10 +885,7 @@ export const actions = {
     const alternatives = (item.exercise.swaps || []).map(byId).filter(Boolean);
 
     const rows = (list) => list.map((ex) =>
-      '<button type="button" class="option-row" data-action="do-swap" data-eid="' + esc(ex.id) + '">' +
-        '<span class="option-row-main"><span class="option-row-label">' + esc(ex.name) + '</span>' +
-        '<span class="option-row-note">' + esc((ex.equipment || []).join(', ')) + '</span></span>' +
-      '</button>').join('');
+      pickerRow(ex, 'do-swap', (ex.equipment || []).join(', '))).join('');
 
     sheet('Swap ' + item.exercise.name,
       (alternatives.length
@@ -892,10 +914,7 @@ export const actions = {
 
   'add-exercise'() {
     const rows = (list) => list.map((ex) =>
-      '<button type="button" class="option-row" data-action="do-add" data-eid="' + esc(ex.id) + '">' +
-        '<span class="option-row-main"><span class="option-row-label">' + esc(ex.name) + '</span>' +
-        '<span class="option-row-note">' + esc((ex.primary || []).join(', ')) + '</span></span>' +
-      '</button>').join('');
+      pickerRow(ex, 'do-add', (ex.primary || []).join(', '))).join('');
 
     sheet('Add an exercise',
       '<input class="input" type="search" id="add-q" placeholder="Search exercises">' +
