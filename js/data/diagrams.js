@@ -14,7 +14,7 @@ export const DIAGRAMS = {
     name: 'Hip Thrust',
     setup: [
       'Sit on the floor with your upper back against a bench and your feet flat.',
-      'Rest the bar across the crease of your hips and hold it with both hands.',
+      'Rest the weight across the crease of your hips and hold it steady.',
       'Push through your heels to lift your hips until your body is flat from shoulders to knees.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Hip thrust: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><rect x="8" y="74" width="23" height="6" fill="var(--clay-500)"/><line x1="12" y1="80" x2="12" y2="98" stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round"/><line x1="27" y1="80" x2="27" y2="98" stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="27" y1="67" x2="46" y2="92"/><line x1="30" y1="71" x2="40" y2="82"/><line x1="40" y1="82" x2="50" y2="90"/><line x1="46" y1="92" x2="59" y2="77"/><line x1="59" y1="77" x2="61" y2="98"/><line x1="61" y1="98" x2="72" y2="98"/></g><circle cx="22" cy="61" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="49" cy="88" r="5.5" fill="var(--clay-500)"/><rect x="114" y="74" width="23" height="6" fill="var(--clay-500)"/><line x1="118" y1="80" x2="118" y2="98" stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round"/><line x1="133" y1="80" x2="133" y2="98" stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="133" y1="67" x2="163" y2="75"/><line x1="136" y1="68" x2="149" y2="74"/><line x1="149" y1="74" x2="163" y2="75"/><line x1="163" y1="75" x2="184" y2="76"/><line x1="184" y1="76" x2="185" y2="98"/><line x1="185" y1="98" x2="196" y2="98"/></g><circle cx="125" cy="64" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="163" cy="70" r="5.5" fill="var(--clay-500)"/><g stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round"><line x1="174" y1="68" x2="174" y2="46"/><line x1="170" y1="52" x2="174" y2="46"/><line x1="178" y1="52" x2="174" y2="46"/></g><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Bottom</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Top</text></svg>`
@@ -33,9 +33,9 @@ export const DIAGRAMS = {
   'romanian-deadlift': {
     name: 'Romanian Deadlift',
     setup: [
-      'Stand tall with the bar resting against the front of your thighs.',
+      'Stand tall with the weight hanging against the front of your thighs.',
       'Soften your knees and push your hips straight back, keeping your back flat.',
-      'Slide the bar down your legs until you feel a stretch behind your thighs, then stand back up.'
+      'Slide the weight down your legs until you feel a stretch behind your thighs, then stand back up.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Romanian deadlift: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="50" y1="28" x2="50" y2="58"/><line x1="50" y1="31" x2="52" y2="46"/><line x1="52" y1="46" x2="54" y2="60"/><line x1="50" y1="58" x2="49" y2="78"/><line x1="49" y1="78" x2="50" y2="98"/><line x1="48" y1="98" x2="60" y2="98"/></g><circle cx="50" cy="20" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="55" cy="63" r="5" fill="var(--clay-500)"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="140" y1="64" x2="167" y2="52"/><line x1="165" y1="53" x2="162" y2="67"/><line x1="162" y1="67" x2="159" y2="81"/><line x1="140" y1="64" x2="154" y2="78"/><line x1="154" y1="78" x2="156" y2="98"/><line x1="154" y1="98" x2="166" y2="98"/></g><circle cx="174" cy="48" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="159" cy="83" r="5" fill="var(--clay-500)"/><g stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round"><line x1="186" y1="58" x2="184" y2="86"/><line x1="187" y1="81" x2="184" y2="86"/><line x1="181" y1="81" x2="184" y2="86"/></g><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Start</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Finish</text></svg>`
   },
@@ -63,8 +63,8 @@ export const DIAGRAMS = {
   'lat-pulldown': {
     name: 'Lat Pulldown',
     setup: [
-      'Sit facing the machine with your feet flat on the floor.',
-      'Reach up and hold the bar a little wider than your shoulders.',
+      'Take hold of the bar overhead, hands a little wider than your shoulders.',
+      'Sit tall or hang tall, and pull your shoulder blades down before your arms bend.',
       'Sit tall and lean back just a little.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Lat pulldown: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><rect x="44" y="76" width="24" height="5" fill="var(--clay-500)"/><rect x="150" y="76" width="24" height="5" fill="var(--clay-500)"/><g stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="45,14 14,14 14,98"/><line x1="41" y1="16" x2="41" y2="21"/><line x1="33" y1="23" x2="49" y2="23"/><line x1="58" y1="82" x2="58" y2="98"/><polyline points="151,14 120,14 120,98"/><line x1="147" y1="16" x2="147" y2="48"/><line x1="139" y1="50" x2="155" y2="50"/><line x1="164" y1="82" x2="164" y2="98"/></g><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="52" y1="74" x2="60" y2="40"/><polyline points="59,43 49,33 41,23"/><polyline points="52,74 32,74 39,96"/><line x1="37" y1="98" x2="27" y2="98"/><line x1="158" y1="74" x2="166" y2="40"/><polyline points="165,43 157,56 147,50"/><polyline points="158,74 138,74 145,96"/><line x1="143" y1="98" x2="133" y2="98"/></g><circle cx="62" cy="31" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="168" cy="31" r="7" fill="var(--ink-700)" stroke="none"/><g stroke="var(--accent)" stroke-width="3" stroke-linecap="round" fill="none"><line x1="130" y1="26" x2="130" y2="46"/><line x1="126" y1="41" x2="130" y2="46"/><line x1="134" y1="41" x2="130" y2="46"/></g><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Start</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Finish</text></svg>`
@@ -73,7 +73,7 @@ export const DIAGRAMS = {
   'seated-row': {
     name: 'Seated Row',
     setup: [
-      'Sit facing the machine and place both feet on the foot plate.',
+      'Sit facing the weight with your chest tall and your feet planted.',
       'Hold the handle with your arms reaching straight forward.',
       'Sit tall with a small bend in your knees.'
     ],
@@ -84,7 +84,7 @@ export const DIAGRAMS = {
     name: 'Bench Press',
     setup: [
       'Lie on your back on the bench with your feet flat on the floor.',
-      'Hold the bar over your chest, hands a little wider than your shoulders.',
+      'Hold the weight over your chest, hands a little wider than your shoulders.',
       'Lower it until it touches your chest, then push it straight back up.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Bench press: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><g stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round" fill="none"><line x1="22" y1="70" x2="22" y2="99"/><line x1="62" y1="70" x2="62" y2="99"/><line x1="128" y1="70" x2="128" y2="99"/><line x1="168" y1="70" x2="168" y2="99"/></g><rect x="14" y="64" width="56" height="6" rx="2" fill="var(--clay-500)"/><rect x="120" y="64" width="56" height="6" rx="2" fill="var(--clay-500)"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M30 57 H66"/><path d="M38 57 L28 47 L40 40"/><path d="M66 57 L80 74 L78 98"/><path d="M78 98 H88"/><path d="M136 57 H172"/><path d="M144 57 L145 43 L146 29"/><path d="M172 57 L186 74 L184 98"/><path d="M184 98 H194"/></g><circle cx="22" cy="57" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="128" cy="57" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="40" cy="40" r="6" fill="var(--clay-500)" stroke="none"/><circle cx="146" cy="29" r="6" fill="var(--clay-500)" stroke="none"/><g stroke="var(--accent)" stroke-width="3" stroke-linecap="round" fill="none"><line x1="162" y1="50" x2="162" y2="26"/><line x1="158" y1="31" x2="162" y2="26"/><line x1="166" y1="31" x2="162" y2="26"/></g><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Down</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Up</text></svg>`
@@ -94,7 +94,7 @@ export const DIAGRAMS = {
     name: 'Overhead Press',
     setup: [
       'Stand tall with your feet under your hips.',
-      'Hold the bar at the front of your shoulders, elbows pointing down.',
+      'Hold the weight at the front of your shoulders, elbows pointing down.',
       'Push it straight up until your arms are straight above your head.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Overhead press: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M60 43 V70"/><path d="M60 46 L56 58 L46 50"/><path d="M60 70 L62 84 L60 98"/><path d="M60 98 H50"/><path d="M166 43 V70"/><path d="M166 46 L169 33 L170 20"/><path d="M166 70 L168 84 L166 98"/><path d="M166 98 H156"/></g><circle cx="56" cy="36" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="162" cy="36" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="46" cy="50" r="6" fill="var(--clay-500)" stroke="none"/><circle cx="170" cy="20" r="6" fill="var(--clay-500)" stroke="none"/><g stroke="var(--accent)" stroke-width="3" stroke-linecap="round" fill="none"><line x1="144" y1="52" x2="144" y2="24"/><line x1="140" y1="29" x2="144" y2="24"/><line x1="148" y1="29" x2="144" y2="24"/></g><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Down</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Up</text></svg>`
@@ -103,7 +103,7 @@ export const DIAGRAMS = {
   'lateral-raise': {
     name: 'Lateral Raise',
     setup: [
-      'Stand tall with a light dumbbell in each hand, arms hanging by your sides.',
+      'Stand or sit tall with a light weight in each hand, arms hanging by your sides.',
       'Lift both arms out to the sides until your hands are level with your shoulders.',
       'Lower them slowly back down to your sides and repeat.'
     ],
@@ -113,9 +113,9 @@ export const DIAGRAMS = {
   'face-pull': {
     name: 'Face Pull',
     setup: [
-      'Set the rope handle above head height and hold one end in each hand.',
+      'Set the handles at about head height and take one in each hand.',
       'Step back so your arms are straight out in front of you at eye level.',
-      'Pull the rope in toward your face, elbows out wide and level with your shoulders.'
+      'Pull back and out, elbows wide and level with your shoulders.'
     ],
     svg: `<svg viewBox="0 0 210 116" role="img" aria-label="Face pull: start and finish position" xmlns="http://www.w3.org/2000/svg" class="exdiagram"><line x1="105" y1="14" x2="105" y2="96" stroke="var(--border)" stroke-width="1"/><line x1="8" y1="100" x2="96" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><line x1="114" y1="100" x2="202" y2="100" stroke="var(--ink-300)" stroke-width="2" stroke-linecap="round"/><g stroke="var(--clay-500)" stroke-width="4" stroke-linecap="round" fill="none"><line x1="16" y1="99" x2="16" y2="19"/><line x1="122" y1="99" x2="122" y2="19"/><line x1="17" y1="17" x2="45" y2="22"/><line x1="123" y1="17" x2="167" y2="17"/><line x1="46" y1="18" x2="46" y2="28"/><line x1="169" y1="13" x2="169" y2="23"/></g><circle cx="16" cy="16" r="3.5" fill="var(--clay-500)"/><circle cx="122" cy="16" r="3.5" fill="var(--clay-500)"/><g stroke="var(--ink-700)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M74 28 L74 58"/><path d="M74 33 L60 28 L46 23"/><path d="M74 58 L72 78 L73 98"/><path d="M73 98 L62 98"/><path d="M180 28 L180 58"/><path d="M180 33 L164 31 L169 18"/><path d="M180 58 L178 78 L179 98"/><path d="M179 98 L168 98"/></g><circle cx="74" cy="20" r="7" fill="var(--ink-700)" stroke="none"/><circle cx="180" cy="20" r="7" fill="var(--ink-700)" stroke="none"/><path d="M128 32 L148 32" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M142 27 L148 32 L142 37" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="52" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Start</text><text x="158" y="112" text-anchor="middle" font-size="9" fill="var(--ink-500)" font-family="system-ui, sans-serif">Finish</text></svg>`
   },
@@ -153,7 +153,7 @@ export const DIAGRAMS = {
   'farmer-carry': {
     name: 'Farmer Carry',
     setup: [
-      'Stand tall with a heavy dumbbell on the floor beside one foot.',
+      'Pick the weight up with a flat back and stand fully tall.',
       'Bend your knees, take hold of the handle, and stand up with it.',
       'Keep your shoulders level and walk forward with slow, even steps.'
     ],
@@ -163,7 +163,7 @@ export const DIAGRAMS = {
   'tricep-extension': {
     name: 'Elbow Extension',
     setup: [
-      'Stand tall a step back from the machine, elbows tucked in at your sides.',
+      'Set your upper arms where the movement starts and keep them there.',
       'Keep your upper arms still - pin your elbows and do not let them drift forward.',
       'Straighten your elbows all the way, then let the forearms come back up under control.'
     ],
