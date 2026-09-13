@@ -1434,3 +1434,83 @@ button.shape-row:active { background: var(--surface-2); }
   .warmup-name { font-size: var(--fs-h2); }
   .warmup-total { display: none; }
 }
+
+/* =============================================================== InBody */
+
+.ib-hero { display: flex; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.ib-pair {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-radius: var(--r);
+}
+.ib-pair-label { font-size: var(--fs-xs); color: var(--text-dim); }
+.ib-pair-value { font-size: var(--fs-num); font-weight: 600; line-height: 1.1; }
+.ib-unit { font-size: var(--fs-xs); font-weight: 400; color: var(--text-dim); }
+.ib-delta { font-size: var(--fs-xs); font-weight: 600; }
+.ib-delta.is-good { color: var(--calm); }
+.ib-delta.is-bad  { color: var(--signal); }
+.ib-weight { margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--text-dim); }
+
+.ib-verdict {
+  display: flex; flex-direction: column; gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--r) var(--r) 0;
+  background: var(--surface-2);
+  margin-bottom: var(--sp-4);
+}
+.ib-verdict.tone-win    { border-left-color: var(--win); }
+.ib-verdict.tone-calm   { border-left-color: var(--calm); }
+.ib-verdict.tone-signal { border-left-color: var(--signal); }
+.ib-verdict-head { font-weight: 600; }
+.ib-verdict-detail { font-size: var(--fs-sm); line-height: 1.5; color: var(--text); }
+
+.ib-vf {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: var(--sp-3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  margin-top: var(--sp-3);
+}
+.ib-vf.is-over { border-color: var(--signal); }
+.ib-vf-label { font-size: var(--fs-xs); color: var(--text-dim); }
+.ib-vf-value { font-size: var(--fs-h2); font-weight: 600; }
+.ib-vf-note { font-size: var(--fs-sm); line-height: 1.45; color: var(--text-dim); }
+
+.ib-quality {
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-left: 3px solid var(--win);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.ib-more { margin: var(--sp-3) 0; }
+.ib-more summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-sm);
+  color: var(--accent);
+}
+.field-note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+/* Two stat tiles cannot share a 320px row once the system font is turned up. */
+@media (max-width: 360px) {
+  .ib-hero { flex-wrap: wrap; }
+  .ib-pair { flex: 1 1 100%; }
+}

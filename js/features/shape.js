@@ -18,6 +18,10 @@ import { classById } from '../data/classes.js';
 import { recommendations } from '../engine/recommend.js';
 import { buildWeek } from '../engine/scheduler.js';
 import { infoButton, infoActions } from '../ui/infosheet.js';
+import {
+  INBODY_FIELDS, INBODY_PROTOCOL, INBODY_CYCLE_NOTE,
+  inbodyScans, compareScans, scanQuality, visceralStatus, muscleToFat,
+} from '../data/inbody.js';
 import { buildReport, renderReport, reportHtml, shareReport, copyReport, smsReport, enableNudge, mondayOf }
   from './report.js';
 import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/components.js';
@@ -348,6 +352,103 @@ async function strengthSection(profile) {
 
 // -------------------------------------------------------------------- render
 
+// ----------------------------------------------------------------- InBody
+//
+// The club has an InBody unit by the coffee. The sheet it prints has two dozen numbers
+// and most of them are noise for her. This surfaces the four that are not, and leads
+// with pounds of muscle and pounds of fat rather than the percentage — because during
+// recomposition the percentage is the number that hides the result.
+
+function inbodyPair(label, value, unit, delta, goodIsUp) {
+  const chip = delta == null || Math.abs(delta) < 0.05
+    ? ''
+    : '<span class="ib-delta ' +
+      ((delta > 0) === goodIsUp ? 'is-good' : 'is-bad') + '">' +
+      (delta > 0 ? '+' : '') + fmt.num(delta) + '</span>';
+  return '<div class="ib-pair">' +
+    '<span class="ib-pair-label">' + esc(label) + '</span>' +
+    '<span class="ib-pair-value num">' + (value == null ? '—' : fmt.num(value)) +
+      '<span class="ib-unit">' + esc(unit) + '</span></span>' +
+    chip + '</div>';
+}
+
+function inbodySection(measurements) {
+  const scans = inbodyScans(measurements);
+
+  if (!scans.length) {
+    return card({
+      title: 'InBody',
+      subtitle: 'The scanner by the coffee',
+      body:
+        '<p class="lede">Four numbers off that sheet are worth having: weight, skeletal ' +
+        'muscle mass, body fat mass, and visceral fat. Type them in and Daybreak will ' +
+        'show you the one thing the bathroom scale cannot — whether you are trading fat ' +
+        'for muscle.</p>' +
+        '<p class="muted">There is no way to pull them across automatically. The club\u2019s ' +
+        'results live in a staff system with no app and no public API, and Daybreak has no ' +
+        'server to sync with. It is four boxes and takes a minute.</p>',
+      footer: btn({ label: 'Log an InBody scan', action: 'log-inbody', variant: 'primary',
+                    size: 'lg', full: true }),
+    });
+  }
+
+  const latest = scans[scans.length - 1];
+  const prev = scans.length > 1 ? scans[scans.length - 2] : null;
+  const cmp = compareScans(latest, prev);
+  const quality = scanQuality(latest);
+  const vf = visceralStatus(latest);
+  const ratio = muscleToFat(latest);
+  const ratioSeries = scans.map(muscleToFat).filter((v) => v != null);
+
+  const verdict = cmp && cmp.verdict
+    ? '<div class="ib-verdict tone-' + esc(cmp.verdict.tone) + '">' +
+        '<span class="ib-verdict-head">' + esc(cmp.verdict.headline) + '</span>' +
+        '<span class="ib-verdict-detail">' + esc(cmp.verdict.detail) + '</span>' +
+      '</div>'
+    : (prev ? '' : '<p class="muted">One scan is a starting point, not a trend. The ' +
+        'reading gets useful on the second one.</p>');
+
+  const visceral = vf
+    ? '<div class="ib-vf' + (vf.over ? ' is-over' : '') + '">' +
+        '<span class="ib-vf-label">Visceral fat</span>' +
+        '<span class="ib-vf-value num">' + fmt.num(vf.value) + ' ' + esc(vf.unit) + '</span>' +
+        '<span class="ib-vf-note">' + (vf.over
+          ? 'Above the ' + vf.limit + ' line. This is the fat around your organs, it climbs ' +
+            'through menopause whatever the scale says, and it is the one your cardio ' +
+            'pillar is actually for.'
+          : 'Under the ' + vf.limit + ' line. Keep it there.') + '</span>' +
+      '</div>'
+    : '';
+
+  return card({
+    title: 'InBody',
+    subtitle: 'Last scanned ' + shortDate(latest.date) +
+      (scans.length > 1 ? ' · ' + scans.length + ' scans' : ''),
+    body:
+      '<div class="ib-hero">' +
+        inbodyPair('Muscle', latest.smmLb, ' lb', cmp ? cmp.dSmm : null, true) +
+        inbodyPair('Body fat', latest.bfmLb, ' lb', cmp ? cmp.dBfm : null, false) +
+      '</div>' +
+      (latest.weightLb != null
+        ? '<p class="ib-weight">Weight ' + fmt.num(latest.weightLb) + ' lb' +
+          (cmp && cmp.dWeight != null ? ' · ' + (cmp.dWeight > 0 ? '+' : '') + fmt.num(cmp.dWeight) : '') +
+          (latest.pbf != null ? ' · ' + fmt.num(latest.pbf) + '% fat' : '') + '</p>'
+        : '') +
+      verdict +
+      (ratioSeries.length > 2
+        ? '<h3 class="section-label">Muscle to fat</h3>' +
+          '<div class="chart-wrap">' + sparkline(ratioSeries, { label: 'Muscle to fat', w: 300, h: 50 }) + '</div>' +
+          '<p class="muted">' + (ratio != null ? fmt.num(ratio) + ' lb of muscle for every pound of fat. ' : '') +
+          'This one climbs whenever you are trading the right way, whichever direction the ' +
+          'scale moves.</p>'
+        : '') +
+      visceral +
+      (quality.message ? '<p class="ib-quality">' + esc(quality.message) + '</p>' : ''),
+    footer: btn({ label: 'Log an InBody scan', action: 'log-inbody', variant: 'ghost',
+                  size: 'md', full: true }),
+  });
+}
+
 export async function render(el) {
   const profile = Store.get('profile') || await DB.getProfile();
   const dials = Store.get('dials');
@@ -392,6 +493,7 @@ export async function render(el) {
       pillarSection(pill) +
       recsSection(recs) +
       measureSection(measurements) +
+      inbodySection(measurements) +
       strengthHtml +
       photoSection(photos) +
       card({
@@ -466,6 +568,62 @@ export const actions = {
         ? '<ul class="detail-list">' + rows + '</ul>'
         : '<p class="lede">Nothing has hit this target yet this week.</p>') +
       (t ? '<p class="muted">Target: ' + fmt.num(t.target) + ' hard sets a week at your stage.</p>' : ''));
+  },
+
+  'log-inbody'() {
+    const f = (spec) =>
+      '<div class="field"><label class="field-label" for="ib-' + spec.key + '">' +
+        esc(spec.label) + ' <span class="field-unit">' + esc(spec.unit) + '</span></label>' +
+        '<input class="input num" id="ib-' + spec.key + '" type="number" inputmode="decimal" ' +
+        'step="' + spec.step + '">' +
+        (spec.note ? '<span class="field-note">' + esc(spec.note) + '</span>' : '') +
+      '</div>';
+
+    const essential = INBODY_FIELDS.filter((x) => x.essential).map(f).join('');
+    const rest = INBODY_FIELDS.filter((x) => !x.essential).map(f).join('');
+
+    sheet('Log an InBody scan',
+      '<p class="lede">Off the printed sheet. The four below are the ones worth having.</p>' +
+      '<div class="sheet-fields">' + essential + '</div>' +
+      '<details class="ib-more"><summary>The rest of the sheet</summary>' +
+        '<div class="sheet-fields">' + rest + '</div></details>' +
+      '<h3 class="section-label">So two scans can be compared</h3>' +
+      '<ul class="info-cues">' + INBODY_PROTOCOL.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ul>' +
+      '<p class="muted">' + esc(INBODY_CYCLE_NOTE) + '</p>' +
+      btn({ label: 'Save scan', action: 'save-inbody', variant: 'primary', size: 'lg', full: true }),
+      {
+        class: 'inbody-sheet',
+        actions: {
+          async 'save-inbody'() {
+            const num = (key) => {
+              const el = document.getElementById('ib-' + key);
+              const n = parseFloat(el ? el.value : '');
+              return Number.isFinite(n) && n > 0 ? n : null;
+            };
+            const record = { id: DB.uid(), date: DB.todayISO(), source: 'inbody', note: '' };
+            for (const spec of INBODY_FIELDS) record[spec.key] = num(spec.key);
+
+            if (record.smmLb == null && record.bfmLb == null && record.weightLb == null) {
+              toast('Add at least muscle, fat or weight.', 'signal');
+              return;
+            }
+            await DB.put('measurements', record);
+
+            // Weight from the scanner is the same weight the protein target is built on.
+            if (record.weightLb) {
+              const dials = Store.get('dials');
+              await DB.saveProfile({
+                weightLb: record.weightLb,
+                proteinTargetG: Math.round((record.weightLb / 2.2046) * dials.proteinGPerKg),
+              });
+              await Store.refreshProfile();
+            }
+            closeSheet();
+            toast('Scan saved.', 'calm');
+            return Router.refresh();
+          },
+        },
+      });
   },
 
   'log-measure'() {
