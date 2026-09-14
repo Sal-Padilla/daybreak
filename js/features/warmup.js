@@ -188,9 +188,12 @@ export function renderWarmup(el, plan, onDone) {
 
         '<div class="warmup-stage">' +
           '<h1 class="warmup-name display">' + it.name + '</h1>' +
+          // The picture sits directly under the name, above the clock and the cue. Placed after
+          // them it slid under the pinned footer on a small phone with large text: 43px of every
+          // drawing hidden, its Start and Finish labels with it. The picture is the point.
+          warmupDiagram(it.name) +
           '<div class="warmup-clock num' + (paused ? ' is-paused' : '') + '">' + mmss(remaining) + '</div>' +
           '<p class="warmup-cue">' + it.cue + '</p>' +
-          warmupDiagram(it.name) +
           (isRaise
             ? '<p class="warmup-flag">This is the one that matters. At 5:30 AM your core ' +
               'temperature is at its lowest point of the day — everything after this is safer once ' +

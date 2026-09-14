@@ -1626,3 +1626,19 @@ button.shape-row:active { background: var(--surface-2); }
 .install-card-row { display: flex; align-items: center; gap: var(--sp-3); }
 .install-card-icon { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 11px; }
 .install-card-text { flex: 1 1 auto; min-width: 0; font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.45; }
+
+/* The warm-up picture now sits directly under the movement name (see warmup.js), so it
+   needs breathing room below rather than above. */
+.warmup-figure { margin: var(--sp-2) auto var(--sp-1); }
+
+/* The step-one note ("At 5:30 AM your core temperature…") stood 218px tall at a 22px system
+   font — a third of a small screen — and pushed everything under it out of view. On a short
+   screen it keeps every word and loses the bulk. */
+@media (max-height: 700px) {
+  .warmup-flag {
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+    padding: var(--sp-2) var(--sp-3);
+    margin-top: var(--sp-2);
+  }
+}
