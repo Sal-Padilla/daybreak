@@ -1642,3 +1642,24 @@ button.shape-row:active { background: var(--surface-2); }
     margin-top: var(--sp-2);
   }
 }
+
+/* Pause and Next share their row 1:2. On a 320px screen with a 22px system font that left
+   Pause about a third of the width, and once paused it read "Resu…". Split evenly when narrow. */
+@media (max-width: 360px) {
+  .warmup-actions .btn,
+  .warmup-actions .btn-primary { flex: 1 1 0; }
+}
+
+/* #content keeps bottom padding to clear the fixed nav, and a sticky footer respects that
+   padding, so on a warm-up long enough to scroll the footer pinned a little above the nav and
+   the cue and note text showed through the strip in between. Paint that strip. */
+.warmup-foot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 64px;
+  background: var(--bg);
+  pointer-events: none;
+}
