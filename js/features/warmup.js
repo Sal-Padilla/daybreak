@@ -62,16 +62,30 @@ const RAMP = {
 };
 
 /**
- * A warm-up movement is exactly the kind she has never done — nobody arrives knowing what
- * a 90/90 hip switch is. The main session got pictures; this screen had none at all.
+ * A warm-up movement is exactly the kind she has never done — nobody arrives knowing what a
+ * 90/90 hip switch is — and the warm-up opens every single session. It used to picture two
+ * of its fourteen movements, and one of those two was wrong: the glute bridge borrowed the
+ * hip-thrust drawing, where the shoulders are up on a bench.
  *
- * We only have artwork for two of these twelve shapes, and a wrong picture is worse than
- * none, so the rest get no drawing. What every one of them DOES get is a link out to a
- * demonstration, which is the honest answer when the app ships no video.
+ * Every movement now has its own shape, or shares one that is genuinely the same movement.
+ * A key without artwork still renders nothing rather than a near-miss, and every movement
+ * keeps its "Show me" link to a demonstration.
  */
-const WARMUP_SHAPE = {
+export const WARMUP_SHAPE = {
+  'Easy bike or row': 'bike',
+  '90/90 hip switches': 'warmup-hip-switch',
+  'Cat-cow': 'warmup-cat-cow',
+  'Ankle rocks': 'warmup-ankle-rock',
+  'World’s greatest stretch': 'warmup-greatest-stretch',
+  'Thoracic opener': 'warmup-thoracic-opener',
+  'Shoulder CARs': 'warmup-shoulder-car',
+  'Wall slides': 'warmup-wall-slide',
+  'Glute bridge': 'glute-bridge',
+  'Banded lateral walk': 'banded-lateral-walk',
   'Dead bug': 'supine-core',
-  'Glute bridge': 'hip-thrust',
+  'Scap pull-ups': 'warmup-scap-pullup',
+  'Band pull-apart': 'warmup-band-pull-apart',
+  'Ramp sets': 'warmup-ramp-sets',
 };
 
 function warmupDiagram(name) {
