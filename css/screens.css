@@ -1554,3 +1554,75 @@ button.shape-row:active { background: var(--surface-2); }
   flex: 0 0 48px;
 }
 .set-row .stepper-input { min-width: 44px; }
+
+/* ================================================= getting it onto the Home Screen */
+
+.install-guide-lede { margin: 0 0 var(--sp-4); line-height: 1.5; }
+.install-guide-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.install-guide-step { display: flex; gap: var(--sp-3); align-items: flex-start; }
+.install-guide-n {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+.install-guide-text { flex: 1 1 auto; min-width: 0; line-height: 1.5; }
+.install-guide-text b { font-weight: 600; }
+.install-guide-text .muted { display: block; margin-top: 2px; font-size: var(--fs-sm); }
+.install-ico {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  vertical-align: -5px;
+  color: var(--accent);
+}
+.install-warn {
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-3);
+  border-left: 3px solid var(--win);
+  background: var(--surface-2);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.install-guide-actions { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-4); }
+
+/* Safari's toolbar sits just below the web page on an iPhone, so the arrow points at the
+   real button rather than describing where it might be. */
+.install-pointer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--sp-4);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: center;
+}
+.install-pointer svg { width: 30px; height: 30px; animation: db-nudge-down 1.2s ease-in-out infinite; }
+@keyframes db-nudge-down {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .install-pointer svg { animation: none; }
+}
+
+/* The reminder card on Today, until it is installed. */
+.install-card-row { display: flex; align-items: center; gap: var(--sp-3); }
+.install-card-icon { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 11px; }
+.install-card-text { flex: 1 1 auto; min-width: 0; font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.45; }

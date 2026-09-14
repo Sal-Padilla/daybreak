@@ -48,16 +48,30 @@ async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
   try {
+    // Was a service worker already running this page? If not, this is a first install and
+    // there is nothing stale on screen to replace.
+    const hadController = !!navigator.serviceWorker.controller;
     const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-    navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'daybreak:updated' && reg.active) {
-        // Only tell her about an update if this wasn't the very first install.
-        if (sessionStorage.getItem('daybreak:booted')) {
-          toast('A new version is ready — reopen to load it.', 'accent');
-        }
-      }
+
+    // A new version has taken over: reload once, so the code on screen IS the new code.
+    //
+    // This used to toast "A new version is ready — reopen to load it". On an iPhone that
+    // instruction does nothing: a Home Screen app is resumed, not relaunched, so reopening
+    // loads nothing new. Rocio went looking for InBody on a copy that never received it.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      location.reload();
     });
-    sessionStorage.setItem('daybreak:booted', '1');
+
+    // For the same reason, look for a new version every time she brings the app back to the
+    // front — not only on a cold start.
+    const check = () => { reg.update().catch(() => { /* offline — try next time */ }); };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check();
+    });
+    setInterval(check, 30 * 60 * 1000);
   } catch (err) {
     console.warn('Daybreak: service worker not registered (offline mode unavailable).', err);
   }

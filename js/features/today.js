@@ -13,6 +13,7 @@ import { weeklyPillars } from '../data/pillars.js';
 import { byId } from '../data/exercises.js';
 import { recommendations } from '../engine/recommend.js';
 import { infoActions } from '../ui/infosheet.js';
+import { installCardHtml, installActions } from './install.js';
 import { card, btn, toast, fmt } from '../ui/components.js';
 import {
   classesForWeek, needsBooking, parseISO, daysBetween,
@@ -382,6 +383,7 @@ export async function render(el) {
 
   // Classes needing a Bay Club Connect booking in the next three days.
   const dueToBook = needsBooking(classes || [], today, 3);
+  const installHtml = await installCardHtml();
 
   el.innerHTML =
     '<div class="today">' +
@@ -390,6 +392,7 @@ export async function render(el) {
         '<p class="today-date">' + esc(longDate(today)) + '</p>' +
       '</header>' +
       heroCard(profile, day, plan, hasOpen) +
+      installHtml +
       (day && day.session && !hasOpen ? readinessCard() : '') +
       noteCard(profile, day, plan, dials) +
       bookingCard(dueToBook, today) +
@@ -416,6 +419,7 @@ export async function render(el) {
 
 export const actions = {
   ...infoActions,
+  ...installActions,
 
   async 'mark-booked'(node) {
     const c = await DB.get('classes', node.dataset.id);

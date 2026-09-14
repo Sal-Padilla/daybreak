@@ -12,7 +12,7 @@ import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/c
 export const id = 'me';
 export const title = 'Me';
 
-const VERSION = '0.9.1';
+const VERSION = '0.9.2';
 
 const STAGE_LABEL = {
   cycling: 'Regular cycles',
@@ -81,6 +81,8 @@ export async function render(el) {
   const backupOverdue = backupDays === null || backupDays >= 14;
 
   const kg = profile.weightLb ? profile.weightLb / 2.2046 : null;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
 
   el.innerHTML =
     '<div class="me">' +
@@ -102,6 +104,18 @@ export async function render(el) {
           ? '<p class="rationale">' + esc(STAGE_RATIONALE[profile.lifeStage]) + '</p>' : ''),
       }) +
 
+      card({
+        title: 'This app',
+        subtitle: 'Daybreak ' + VERSION + (standalone ? ' · on your Home Screen' : ' · in the browser'),
+        body: standalone
+          ? '<p class="muted">Installed. It opens full screen, works with no signal, and ' +
+            'fetches any new version by itself whenever you open it.</p>'
+          : '<p class="muted">Put it on your Home Screen and it opens like any other app — ' +
+            'full screen, no browser bar, and it works with no signal.</p>',
+        footer:
+          (standalone ? '' : btn({ label: 'Add to Home Screen', action: 'install-help', variant: 'primary', size: 'md', full: true })) +
+          btn({ label: 'Get the latest version', action: 'force-update', variant: 'ghost', size: 'md', full: true }),
+      }) +
       card({
         title: 'Training',
         subtitle: program ? program.name : '',
@@ -206,13 +220,6 @@ export async function render(el) {
           : btn({ label: 'Load 14 weeks of demo data', action: 'load-demo', variant: 'ghost', size: 'lg', full: true }),
       }) +
 
-      card({
-        title: 'On your home screen',
-        body:
-          '<p class="muted">Daybreak can sit on your home screen and open like any other app — ' +
-          'full screen, no browser bar, and it still works with no signal.</p>',
-        footer: btn({ label: 'How do I do that?', action: 'install-help', variant: 'ghost', size: 'md', full: true }),
-      }) +
 
       card({
         title: 'About Daybreak',
@@ -365,6 +372,23 @@ export const actions = {
   },
 
   'install-help'() { showInstallHelp(); },
+
+  // The escape hatch. Throws away the saved copy of the APP — never the training history,
+  // which lives in IndexedDB and is not touched — and loads whatever is live right now.
+  async 'force-update'() {
+    toast('Getting the latest version…', 'calm');
+    try {
+      if ('serviceWorker' in navigator) {
+        for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+      }
+      if (window.caches) {
+        for (const k of await caches.keys()) await caches.delete(k);
+      }
+    } catch (err) {
+      console.warn('Daybreak: could not clear the saved copy.', err);
+    }
+    setTimeout(() => location.reload(), 400);
+  },
 
   async 'load-demo'() {
     const ok = await confirmDialog(

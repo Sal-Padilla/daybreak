@@ -490,10 +490,10 @@ export async function render(el) {
       '<header class="page-head"><h1 class="display">Shape</h1>' +
         '<p class="page-sub">Is it working?</p></header>' +
       shapeSection(shape) +
+      inbodySection(measurements) +
       pillarSection(pill) +
       recsSection(recs) +
       measureSection(measurements) +
-      inbodySection(measurements) +
       strengthHtml +
       photoSection(photos) +
       card({
