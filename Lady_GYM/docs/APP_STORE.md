@@ -8,11 +8,15 @@ Lady_GYM is a web app built to install like a real one. From the Home Screen it 
 screen with its own icon and launch screen, works with no signal, and keeps its data on the
 phone.
 
-**What to send people:** the get page, not the bare app link.
+**What to send people:** the short invite link, not the bare app link. The message to send
+is in [INVITE.md](INVITE.md).
 
 ```
-https://sal-padilla.github.io/daybreak/Lady_GYM/get.html
+https://sal-padilla.github.io/daybreak/ladygym
 ```
+
+It forwards to the install page (`Lady_GYM/get.html`). The link is all lower case on purpose:
+GitHub Pages links are case-sensitive, and "Lady_GYM" is easy to mistype on a phone.
 
 That page:
 - says **"No App Store needed"** in the first lines;

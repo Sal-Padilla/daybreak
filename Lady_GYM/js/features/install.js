@@ -60,8 +60,9 @@ export function appUrl() {
   return new URL('./', location.href).href;
 }
 
+/** The short invite link: …/daybreak/ladygym/ forwards to get.html (see ../ladygym/index.html). */
 export function getUrl() {
-  return new URL('./get.html', location.href).href;
+  return new URL('../ladygym/', new URL('./', location.href)).href;
 }
 
 /* ------------------------------------------------------------------ the drawn steps */

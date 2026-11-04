@@ -6,9 +6,10 @@ This is Daybreak's successor ("daybreak2"). It was rebuilt after every woman Day
 to declined to use it. [docs/REVIEW_OF_DAYBREAK.md](docs/REVIEW_OF_DAYBREAK.md) covers what
 they said, what they meant, and what changed, with measurements and before/after screenshots.
 
-**To send to people:** https://sal-padilla.github.io/daybreak/Lady_GYM/get.html
+**To send to people:** https://sal-padilla.github.io/daybreak/ladygym. The ready-to-send
+invite text is in [docs/INVITE.md](docs/INVITE.md).
 **The app itself:** https://sal-padilla.github.io/daybreak/Lady_GYM/
-*(Both go live once this branch is merged into `main`.)*
+*(Both go live once this is merged into `main` and GitHub Pages has published.)*
 
 | | | |
 |---|---|---|

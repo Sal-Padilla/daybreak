@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { poseMarkup } from '../js/art/figure.js';
-import { POSES } from '../js/art/scenes.js';
+import { POSES, welcomeArt } from '../js/art/scenes.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const OUT = join(ROOT, 'icons');
@@ -82,6 +82,22 @@ for (const [w, h] of SPLASH) {
   await page.setContent(splashHtml(w, h));
   await page.screenshot({ path: join(OUT, 'splash-' + w + 'x' + h + '.png') });
 }
+
+// The picture that appears when the invite link is pasted into Messages, WhatsApp or Mail.
+await page.setViewportSize({ width: 1200, height: 630 });
+await page.setContent('<html><body style="margin:0;width:1200px;height:630px;display:flex;' +
+  'font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#FF5A86;overflow:hidden">' +
+  '<div style="width:640px;height:630px;flex:none">' + welcomeArt().replace('<svg ', '<svg width="640" height="630" preserveAspectRatio="xMidYMid slice" ') + '</div>' +
+  '<div style="flex:1;padding:70px 56px;color:#fff;display:flex;flex-direction:column;justify-content:center;' +
+  'background:linear-gradient(160deg,#D3125E,#B8145E)">' +
+  '<div style="width:110px;height:110px;border-radius:25px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)">' +
+  iconSvg().replace('<svg ', '<svg width="110" height="110" ') + '</div>' +
+  '<div style="font-size:62px;font-weight:900;margin-top:28px;letter-spacing:-1px">Lady_GYM</div>' +
+  '<div style="font-size:31px;font-weight:600;line-height:1.3;margin-top:12px">Workouts made for women,<br>a picture for every move.</div>' +
+  '<div style="font-size:24px;font-weight:700;margin-top:26px;background:rgba(255,255,255,.2);border-radius:999px;' +
+  'padding:10px 20px;align-self:flex-start;white-space:nowrap">Free · no App Store needed</div>' +
+  '</div></body></html>');
+await page.screenshot({ path: join(OUT, 'share-card.jpg'), type: 'jpeg', quality: 86 });
 
 await browser.close();
 console.log('icons written to', OUT);
