@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FF3D86">
+  <title>Get Lady_GYM — free on your iPhone</title>
+  <meta name="description" content="Workouts made for women, planned around your classes, with a picture for every move. Free — installs from Safari in 15 seconds, no App Store needed.">
+  <!-- Link previews in Messages, WhatsApp and Mail -->
+  <meta property="og:title" content="Lady_GYM — workouts made for women">
+  <meta property="og:description" content="A picture for every move, planned around your classes. Free, on your iPhone in 15 seconds.">
+  <meta property="og:image" content="./icons/icon-1024.png">
+  <meta name="apple-mobile-web-app-title" content="Lady_GYM">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./css/screens.css">
+  <style>
+    body { overflow: auto; }
+    .get { max-width: 520px; margin: 0 auto; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px); }
+    .get-hero { position: relative; aspect-ratio: 360 / 300; border-radius: 0 0 36px 36px; overflow: hidden; }
+    .get-hero svg { width: 100%; height: 100%; }
+    .get-top { padding: 22px 16px 0; text-align: center; }
+    .get-top img { width: 72px; height: 72px; border-radius: 17px; margin: -60px auto 10px; position: relative; box-shadow: 0 8px 24px rgba(180, 0, 60, .3); }
+    .get-top h1 { font-family: var(--font-round); font-weight: 800; font-size: var(--t-title1); line-height: 1.15; margin-top: 8px; }
+    .get-top p { color: var(--label-2); margin-top: 8px; }
+    .get-free { display: inline-flex; gap: 6px; align-items: center; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: var(--mint-soft); color: var(--mint-ink); font-weight: 700; font-size: var(--t-sub); }
+    .get-body { padding: 0 16px; }
+    .get-body h2 { font-family: var(--font-round); font-weight: 800; font-size: var(--t-title2); margin: 28px 2px 10px; }
+    .get-open { margin-top: 20px; }
+    .feat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .feat div { background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-card); }
+    .feat .art { aspect-ratio: 1; }
+    .feat .art svg { width: 100%; height: 100%; }
+    .feat p { padding: 10px 12px 12px; font-weight: 700; font-size: var(--t-sub); line-height: 1.25; }
+    .feat p span { display: block; font-weight: 500; color: var(--label-2); font-size: var(--t-foot); margin-top: 2px; }
+    .get-foot { text-align: center; color: var(--label-2); font-size: var(--t-foot); margin-top: 26px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <main class="get">
+    <div class="get-hero" id="hero"></div>
+    <div class="get-top">
+      <img src="./icons/icon-180.png" alt="Lady_GYM app icon" width="72" height="72">
+      <p class="wordmark">Lady<span>_</span>GYM</p>
+      <h1>Strong, toned and confident — at your own pace.</h1>
+      <p>Workouts made for women, planned around your club classes, with a picture for every move.</p>
+      <span class="get-free">✓ Free · No App Store needed · No sign-up</span>
+    </div>
+    <div class="get-body">
+      <div id="guide"></div>
+      <div class="get-open"><a class="btn btn-primary btn-lg btn-full" href="./" id="open">Open Lady_GYM</a></div>
+
+      <h2>What’s inside</h2>
+      <div class="feat" id="feat"></div>
+
+      <p class="get-foot">Your workouts and photos stay private on your phone — nothing is uploaded.<br>
+        General fitness guidance, not medical advice.</p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { welcomeArt, classArt } from './js/art/scenes.js';
+    import { figureSvg } from './js/art/figure.js';
+    import { guideBody, installEnv } from './js/features/install.js';
+    import { rings } from './js/ui/rings.js';
+
+    document.getElementById('hero').innerHTML = welcomeArt();
+
+    const env = installEnv();
+    const guide = document.getElementById('guide');
+    if (env === 'installed') {
+      guide.innerHTML = '';
+    } else {
+      guide.innerHTML = '<h2>' + (env === 'desktop' ? 'Open it on your phone' : 'Put it on your Home Screen') + '</h2>' + guideBody(env);
+    }
+    guide.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-action="copy-link"]');
+      if (!b) return;
+      const url = new URL('./', location.href).href;
+      try { await navigator.clipboard.writeText(url); b.querySelector('span').textContent = 'Copied! Paste it in Safari'; }
+      catch (_) { prompt('Copy this link and open it in Safari:', url); }
+    });
+
+    const box = (art, title, sub) => '<div><div class="art">' + art + '</div><p>' + title + '<span>' + sub + '</span></p></div>';
+    const ringArt = '<svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#2A1B4A"/><stop offset="1" stop-color="#4A2A6A"/></linearGradient></defs>' +
+      '<rect width="130" height="130" fill="url(#rg)"/><g transform="translate(17 17)">' +
+      rings([{ pct: .9, color: '#FF2D78', track: 'rgba(255,45,120,.25)' }, { pct: .7, color: '#FF8A3D', track: 'rgba(255,138,61,.25)' },
+        { pct: 1, color: '#8E5CF7', track: 'rgba(142,92,247,.25)' }, { pct: .55, color: '#11B5A4', track: 'rgba(17,181,164,.25)' }],
+        { size: 96, stroke: 9, gap: 2 }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') + '</g></svg>';
+    document.getElementById('feat').innerHTML =
+      box('<div style="background:linear-gradient(140deg,#FF5C93,#FF9A7A);width:100%;height:100%">' + figureSvg('hip-thrust', { frame: 'finish', labels: false, panel: false }) + '</div>',
+        'A picture for every move', 'All 144 exercises, illustrated') +
+      box(classArt('mat-pilates', { square: true }), 'Your classes, planned in', 'Pilates, Cycle, Yoga and more') +
+      box(ringArt, 'See your progress', 'Four colourful rings each week') +
+      box(classArt('vinyasa-flow', { square: true }), 'Made for women', 'Shape, strength, every life stage');
+  </script>
+</body>
+</html>

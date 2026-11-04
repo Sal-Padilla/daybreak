@@ -1,0 +1,149 @@
+/* Lady_GYM — css/tokens.css — colour, type and shape. The one place a colour is defined.
+
+   What changed from Daybreak, and why:
+   - Daybreak was beige, brown and serif. Women who tried it called it "not colourful" and
+     said it did not feel like an iPhone app. So: Apple's grouped-background greys and white
+     cards, the iPhone's own system font, and a bright, joyful accent family — raspberry,
+     violet, coral, teal, sky — one colour per kind of training so a screen reads at a glance.
+   - Every TEXT colour below clears WCAG AA 4.5:1 on white and on --bg, in both themes. The
+     bright "-fill" colours are for shapes, rings and gradients, never for small text.
+   - Verify with tools/check-contrast.mjs after any change. */
+
+:root {
+  color-scheme: light;
+
+  /* grounds — iOS grouped style */
+  --bg: #F2F2F7;
+  --card: #FFFFFF;
+  --card-2: #F6F6FA;
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-2: rgba(118, 118, 128, 0.20);
+  --sep: rgba(60, 60, 67, 0.16);
+  --bar: rgba(249, 249, 251, 0.82);       /* tab bar + nav bar, under a blur */
+
+  /* text */
+  --label: #111114;
+  --label-2: #5C5C66;                     /* 6.4:1 on white, 5.8:1 on --bg */
+  --label-3: #6E6E78;                     /* 5.0:1 on white — hints only */
+  --on-color: #FFFFFF;
+
+  /* brand */
+  --brand: #C80D55;                       /* text-safe raspberry: 5.9:1 on white, 4.9:1 on its tint */
+  --brand-fill: #FF2D78;
+  --brand-soft: #FFE4EE;
+  --grad-brand: linear-gradient(135deg, #E1126B 0%, #C2117A 100%);
+  --grad-sunrise: linear-gradient(140deg, #FF4F8B 0%, #FF7A6B 55%, #FFB36B 100%);
+  --grad-sunrise-deep: linear-gradient(140deg, #D3125E 0%, #C43C0C 100%);   /* behind white text */
+
+  /* the training colours: -fill for shapes, -ink for text, -soft for tinted backgrounds */
+  --pink-fill: #FF2D78;   --pink-ink: #C80D55;   --pink-soft: #FFE4EE;
+  --violet-fill: #8E5CF7; --violet-ink: #6A35D9; --violet-soft: #EEE6FF;
+  --teal-fill: #11B5A4;   --teal-ink: #00756A;   --teal-soft: #D9F5F1;
+  --orange-fill: #FF8A3D; --orange-ink: #B04A00; --orange-soft: #FFEBDC;
+  --blue-fill: #2E8BFF;   --blue-ink: #0A5FC2;   --blue-soft: #DDEEFF;
+  --sun-fill: #FFC21A;    --sun-ink: #855C00;    --sun-soft: #FFF4D1;
+  --mint-fill: #22C17A;   --mint-ink: #157A47;   --mint-soft: #DCF6E8;
+  --red-fill: #FF453A;    --red-ink: #C62A20;    --red-soft: #FFE5E3;
+
+  /* pillars map onto the training colours */
+  --p-resistive: var(--pink-fill);   --p-resistive-ink: var(--pink-ink);   --p-resistive-soft: var(--pink-soft);
+  --p-control: var(--violet-fill);   --p-control-ink: var(--violet-ink);   --p-control-soft: var(--violet-soft);
+  --p-cardio: var(--orange-fill);    --p-cardio-ink: var(--orange-ink);    --p-cardio-soft: var(--orange-soft);
+  --p-shape: var(--teal-fill);       --p-shape-ink: var(--teal-ink);       --p-shape-soft: var(--teal-soft);
+
+  --good: var(--mint-ink);
+  --warn: var(--sun-ink);
+  --bad: var(--red-ink);
+
+  /* type: the iPhone's own fonts. ui-rounded is SF Pro Rounded on Apple devices. */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-round: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* iOS text styles, in rem so they follow the phone's Text Size setting (1rem = Body) */
+  --t-large: 2rem;        /* 34 */
+  --t-title1: 1.647rem;   /* 28 */
+  --t-title2: 1.294rem;   /* 22 */
+  --t-title3: 1.176rem;   /* 20 */
+  --t-headline: 1rem;     /* 17 semibold */
+  --t-body: 1rem;         /* 17 */
+  --t-callout: 0.941rem;  /* 16 */
+  --t-sub: 0.882rem;      /* 15 */
+  --t-foot: 0.765rem;     /* 13 */
+  --t-cap: 0.706rem;      /* 12 */
+
+  /* shape */
+  --r-card: 20px;
+  --r-group: 14px;
+  --r-tile: 18px;
+  --r-pill: 999px;
+  --gutter: 16px;
+  --tap: 48px;
+  --nav-h: 44px;
+  --tab-h: 50px;
+  --shadow-card: 0 1px 2px rgba(20, 10, 40, 0.04), 0 6px 18px rgba(20, 10, 40, 0.06);
+  --shadow-hero: 0 10px 30px rgba(200, 20, 90, 0.22);
+  --shadow-float: 0 12px 40px rgba(20, 10, 40, 0.18);
+
+  --spring: cubic-bezier(0.32, 0.72, 0, 1);   /* the iOS sheet curve */
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ---------------------------------------------------------------- dark
+   Two identical blocks: one follows the phone, one is the explicit choice in Profile.
+   Explicit light (data-theme="light") wins over a dark phone. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #000000;
+    --card: #1C1C1E;
+    --card-2: #2C2C2E;
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-2: rgba(118, 118, 128, 0.36);
+    --sep: rgba(84, 84, 88, 0.6);
+    --bar: rgba(22, 22, 24, 0.78);
+    --label: #FFFFFF;
+    --label-2: #AEAEB6;
+    --label-3: #9A9AA3;
+    --brand: #FF5C93;
+    --brand-soft: #3A1426;
+    --pink-ink: #FF6FA0;   --pink-soft: #3A1426;
+    --violet-ink: #B595FF; --violet-soft: #2A1F45;
+    --teal-ink: #4FD9C7;   --teal-soft: #0E302C;
+    --orange-ink: #FFA060; --orange-soft: #3A2312;
+    --blue-ink: #6AB0FF;   --blue-soft: #10263F;
+    --sun-ink: #FFD24A;    --sun-soft: #352A0B;
+    --mint-ink: #4ADE96;   --mint-soft: #0F2E1F;
+    --red-ink: #FF6A60;    --red-soft: #3A1513;
+    --shadow-card: none;
+    --shadow-hero: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --card: #1C1C1E;
+  --card-2: #2C2C2E;
+  --fill: rgba(118, 118, 128, 0.24);
+  --fill-2: rgba(118, 118, 128, 0.36);
+  --sep: rgba(84, 84, 88, 0.6);
+  --bar: rgba(22, 22, 24, 0.78);
+  --label: #FFFFFF;
+  --label-2: #AEAEB6;
+  --label-3: #9A9AA3;
+  --brand: #FF5C93;
+  --brand-soft: #3A1426;
+  --pink-ink: #FF6FA0;   --pink-soft: #3A1426;
+  --violet-ink: #B595FF; --violet-soft: #2A1F45;
+  --teal-ink: #4FD9C7;   --teal-soft: #0E302C;
+  --orange-ink: #FFA060; --orange-soft: #3A2312;
+  --blue-ink: #6AB0FF;   --blue-soft: #10263F;
+  --sun-ink: #FFD24A;    --sun-soft: #352A0B;
+  --mint-ink: #4ADE96;   --mint-soft: #0F2E1F;
+  --red-ink: #FF6A60;    --red-soft: #3A1513;
+  --shadow-card: none;
+  --shadow-hero: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
