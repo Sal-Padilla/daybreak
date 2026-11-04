@@ -133,6 +133,10 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // Lady_GYM lives at ./Lady_GYM/ on the same site, inside this worker's scope. It has its own
+  // service worker; without this line, a phone that has Daybreak installed would answer
+  // Lady_GYM's first page load from here — and store Lady_GYM's page as Daybreak's index.
+  if (url.pathname.includes('/Lady_GYM/')) return;
 
   if (req.mode === 'navigate' || isCode(url)) {
     const navigate = req.mode === 'navigate';
