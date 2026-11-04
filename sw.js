@@ -2,7 +2,14 @@
 
 // Bump this on any change to the strategy below. Asset freshness no longer depends on it —
 // network-first handles that for code — but a new name forces one clean sweep of old caches.
-const CACHE = 'daybreak-v0.9.2';
+// v0.9.3: the v0.9.2 worker had no Lady_GYM bypass, so on a phone that opened Lady_GYM's link
+// before this one arrived, daybreak-v0.9.2 holds Lady_GYM's pages (one saved as Daybreak's
+// index.html) and copies of its files. The new name sweeps all of that away in one go.
+const CACHE = 'daybreak-v0.9.3';
+
+// Lady_GYM lives at ./Lady_GYM/ (short link ./ladygym/) on the same site, inside this worker's
+// scope, with its own service worker and its own lady-gym-* caches. Daybreak leaves all of it alone.
+const isLadyGym = (url) => url.pathname.includes('/Lady_GYM/') || url.pathname.includes('/ladygym/');
 
 // Relative paths, resolved against the service worker's own scope. A leading slash here would
 // point at the domain root and break the app the moment it lives under /daybreak/.
@@ -76,10 +83,14 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     const upgrading = keys.some((k) => k.startsWith('daybreak-') && k !== CACHE);
-    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    // Only Daybreak's own old caches: deleting every other name wiped Lady_GYM's offline copy.
+    await Promise.all(keys.filter((k) => k.startsWith('daybreak-') && k !== CACHE).map((k) => caches.delete(k)));
     await self.clients.claim();
     const clients = await self.clients.matchAll({ type: 'window' });
     for (const client of clients) {
+      // A Lady_GYM page this worker still controls (its first visit, before Lady_GYM's own worker
+      // takes over) is not Daybreak: reloading it would throw her out of Lady_GYM's sign-up.
+      if (isLadyGym(new URL(client.url))) continue;
       client.postMessage({ type: 'daybreak:updated', version: CACHE });
       // On an UPGRADE, reload every open copy onto the new code. The page open right now is
       // running the old app.js, which cannot reload itself, and an iPhone Home Screen app is
@@ -133,10 +144,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  // Lady_GYM lives at ./Lady_GYM/ on the same site, inside this worker's scope. It has its own
-  // service worker; without this line, a phone that has Daybreak installed would answer
-  // Lady_GYM's first page load from here — and store Lady_GYM's page as Daybreak's index.
-  if (url.pathname.includes('/Lady_GYM/') || url.pathname.includes('/ladygym/')) return;
+  // Lady_GYM has its own service worker; without this line, a phone that has Daybreak installed
+  // would answer Lady_GYM's first page load from here — and store Lady_GYM's page as Daybreak's index.
+  if (isLadyGym(url)) return;
 
   if (req.mode === 'navigate' || isCode(url)) {
     const navigate = req.mode === 'navigate';

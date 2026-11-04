@@ -7,6 +7,11 @@
 
 import { poseMarkup, castFor, figureSvg } from './figure.js';
 
+// Labels can be a stored session's name (a restored backup), so they are escaped like figure.js's.
+function escAttr(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
 /* ------------------------------------------------------------------ poses (100 × 116 frame) */
 
 const POSES = {
@@ -249,7 +254,7 @@ export function sceneSvg({ pose = 'star', prop = 'none', theme = 'pink', castKey
   }
 
   return '<svg class="scene" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid slice" ' +
-    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + (label || 'Illustration') + '">' +
+    'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + escAttr(label || 'Illustration') + '">' +
     bg + fig + '</svg>';
 }
 
@@ -291,7 +296,7 @@ export function workoutArt(type, firstDiagramKey, opts = {}) {
       const id = 'wa' + (++uid);
       const inner = fig.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
       return '<svg class="scene" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" ' +
-        'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + (opts.label || 'Workout') + '">' +
+        'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + escAttr(opts.label || 'Workout') + '">' +
         '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
         '<stop offset="0" stop-color="' + t.a + '"/><stop offset="1" stop-color="' + t.b + '"/></linearGradient></defs>' +
         (opts.bare ? '' : '<rect width="200" height="130" fill="url(#' + id + ')"/>') +

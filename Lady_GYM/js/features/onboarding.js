@@ -37,6 +37,7 @@ let step = 0;
 let draft = null;
 let photo = null;
 let onDone = null;
+let finishing = false;      // a double tap on the last button must not start the app twice
 
 export async function needsOnboarding() {
   try {
@@ -211,6 +212,7 @@ async function finish() {
     if (onDone) onDone();
   } catch (err) {
     console.error(err);
+    finishing = false;
     toast('Could not save that — try again?', { tone: 'bad', ic: 'info' });
   }
 }
@@ -223,7 +225,9 @@ async function onClick(e) {
     haptic();
     draft[field] = b.dataset.v || null;
     for (const x of root.querySelectorAll('[data-ob="' + what + '"]')) x.classList.toggle('is-on', x === b);
-    setTimeout(() => go(step + 1), 260);
+    // From the step this tap was on: a double tap used to advance twice and skip a question.
+    const from = step;
+    setTimeout(() => { if (step === from) go(from + 1); }, 260);
   };
   if (what === 'next') { haptic(); return go(step + 1); }
   if (what === 'back') return go(step - 1);
@@ -232,7 +236,11 @@ async function onClick(e) {
   if (what === 'exp') return choose('experience');
   if (what === 'stage') return choose('lifeStage');
   if (what === 'body') { readBody(); return go(step + 1); }
-  if (what === 'finish') { haptic(); confetti(); return setTimeout(finish, 450); }
+  if (what === 'finish') {
+    if (finishing) return;
+    finishing = true;
+    haptic(); confetti(); return setTimeout(finish, 450);
+  }
   if (what === 'photo') {
     const f = await pickPhoto();
     if (!f) return;
@@ -274,6 +282,7 @@ export function renderOnboarding(el, done) {
   step = 0;
   draft = { name: '', goal: null, experience: null, lifeStage: null, ft: '', inch: '', weightLb: '' };
   photo = null;
+  finishing = false;
   if (!el.dataset.wired) {
     el.addEventListener('click', onClick);
     el.addEventListener('input', onInput);

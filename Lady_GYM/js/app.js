@@ -43,7 +43,11 @@ async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
   try {
-    const had = !!navigator.serviceWorker.controller;
+    // Only Lady_GYM's own worker counts. On a phone that has Daybreak, Daybreak's worker controls
+    // this page on its first visit; Lady_GYM's worker taking over from it is not an update, and a
+    // reload then threw her back to the start of sign-up.
+    const ctl = navigator.serviceWorker.controller;
+    const had = !!ctl && ctl.scriptURL === new URL('./sw.js', location.href).href;
     const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
     let reloading = false;
     // A Home Screen app is resumed, not relaunched, so "reopen to update" never happens on an
@@ -68,6 +72,14 @@ async function startTabs() {
     tabbar: document.getElementById('tabbar'),
     tabs: TABS,
     actions: { ...installActions },
+  });
+  // A Home Screen app is resumed, not relaunched: opened the next morning it still showed
+  // yesterday — yesterday's date, "You did it!" and no Start button. When the day has turned,
+  // redraw. Not under an open workout, which keeps the session it started with.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || Nav.isPresenting()) return;
+    if (DB.todayISO() === Store.get('today')) return;
+    Store.reloadActiveSession().then(() => Nav.invalidate()).catch((err) => console.error(err));
   });
   await Nav.tab('today');
   // A workout left open (app closed mid-session) comes straight back.

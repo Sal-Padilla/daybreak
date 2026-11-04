@@ -47,9 +47,9 @@
 .checkin .card-title { font-size: var(--t-title3); font-family: var(--font-round); font-weight: 750; }
 .checkin-q { margin-top: 14px; }
 .checkin-label { font-weight: 600; font-size: var(--t-callout); margin-bottom: 6px; }
-.faces { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.faces { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .face {
-  min-height: 48px; border: 0; border-radius: 14px; background: var(--fill);
+  min-height: 48px; border: 0; border-radius: 14px; background: var(--fill); padding: 0;
   font-size: 1.6rem; line-height: 1;
   transition: transform .15s var(--ease), background .2s var(--ease);
 }
@@ -82,10 +82,12 @@
 
 .ringscard { display: flex; align-items: center; gap: 18px; width: 100%; border: 0; text-align: left; color: inherit; }
 .ringscard-legend { flex: 1; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
-.legend-row { display: flex; align-items: center; gap: 8px; }
+/* Names wrap, and the % drops below when even one word will not fit, rather than truncating:
+   on a small phone, or with large text, it read "Balance …" and "Tone & …". */
+.legend-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.legend-name { flex: 1; font-size: var(--t-sub); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend-val { font-weight: 800; font-size: var(--t-sub); }
+.legend-name { flex: 1; font-size: var(--t-sub); font-weight: 600; }
+.legend-val { font-weight: 800; font-size: var(--t-sub); margin-left: auto; }
 
 /* ================================================================ small cards */
 
@@ -243,7 +245,7 @@
   display: flex; align-items: center; gap: 8px; padding: 0 12px; min-height: 40px; border-radius: 12px;
   background: var(--fill); color: var(--label-2);
 }
-.search input { flex: 1; border: 0; background: none; min-height: 40px; font-size: var(--t-body); color: var(--label); outline: none; min-width: 0; }
+.search input { flex: 1; border: 0; background: none; min-height: 40px; font-size: max(16px, var(--t-body)); color: var(--label); outline: none; min-width: 0; }
 .filter-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 12px calc(-1 * var(--gutter)); padding: 0 var(--gutter); }
 .filter-row::-webkit-scrollbar { display: none; }
 .fchip {
@@ -300,7 +302,7 @@
 .pl-count { position: relative; width: 96px; height: 96px; margin: 8px auto; display: grid; place-items: center; }
 .pl-count svg { position: absolute; inset: 0; }
 .pl-count span { position: relative; font-weight: 800; font-size: var(--t-title3); }
-.pl-row { display: flex; gap: 10px; margin-top: 12px; }
+.pl-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .pl-row .btn { flex: 1; }
 
 .pl-progress { display: flex; gap: 4px; margin: 2px 0 12px; }
@@ -434,7 +436,7 @@
 .daypick { display: flex; align-items: center; gap: 4px; margin: 0 -6px; }
 .daypick-arrow { width: 32px; height: 52px; border: 0; background: none; color: var(--brand); flex: none; display: grid; place-items: center; }
 .daypick-arrow[disabled] { color: var(--label-3); opacity: .35; }
-.daypick-days { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.daypick-days { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
 .dp {
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 5px; border: 0;
   border-radius: 14px; background: none; color: var(--label);
@@ -499,15 +501,18 @@
 .bigrings-k { font-size: var(--t-foot); font-weight: 700; color: var(--label-2); text-transform: uppercase; letter-spacing: .04em; }
 .bigrings-v { font-family: var(--font-round); font-size: var(--t-title2); font-weight: 700; }
 .bigrings-v b { font-size: 2.4rem; }
-.legend4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* minmax(0, 1fr) and wrapping names: with large text "Tone & Shape" and the right-hand column
+   of areas ran off the card, and "4.5/10" showed as "4.5/1". */
+.legend4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .legend-cell { display: flex; gap: 8px; align-items: flex-start; }
+.legend-cell > span:last-child { min-width: 0; }
 .legend-cell .legend-dot { margin-top: 5px; }
 .legend-cell .legend-name { display: block; font-size: var(--t-foot); color: var(--label-2); font-weight: 600; }
 .legend-num { display: block; font-size: var(--t-title3); font-weight: 800; }
 .shapecard { display: flex; flex-direction: column; gap: 14px; }
-.areas2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
-.area2-top { display: flex; justify-content: space-between; font-size: var(--t-sub); font-weight: 600; margin-bottom: 5px; }
-.area2-top .num { color: var(--label-2); font-weight: 700; }
+.areas2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.area2-top { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 6px; font-size: var(--t-sub); font-weight: 600; margin-bottom: 5px; }
+.area2-top .num { color: var(--label-2); font-weight: 700; margin-left: auto; }
 
 .photo-empty { display: flex; gap: 14px; align-items: center; }
 .photo-add {
@@ -688,4 +693,9 @@
   .pillar-row { grid-template-columns: 100px 1fr; }
   .ccard-art { width: 78px; }
   .bigrings-top .rings { width: 140px; height: 140px; }
+  /* seven days in 256px: at 38–40px a circle, Sunday was cut off the right edge */
+  .wday-dot { width: 32px; height: 32px; }
+  .ob-wdot { width: 34px; height: 34px; }
+  /* day labels capped at their normal size, so large text does not run them together */
+  .dp-l { font-size: min(var(--t-cap), 3.75vw); }
 }

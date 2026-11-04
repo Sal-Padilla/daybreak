@@ -153,6 +153,10 @@ function repValue(set, exercise) {
   if (trackOf(exercise) === 'time_hold') {
     return num(set.seconds) !== null ? num(set.seconds) : num(set.reps);
   }
+  if (trackOf(exercise) === 'time_distance') {
+    // Cardio is logged as seconds (minutes × 60), and its range is in minutes.
+    return num(set.seconds) !== null ? Math.round(num(set.seconds) / 60) : num(set.reps);
+  }
   return num(set.reps) !== null ? num(set.reps) : num(set.seconds);
 }
 
@@ -405,6 +409,9 @@ export function nextTarget(history, exercise, dials) {
       message =
         `Every set hit ${fmtNum(hi)} ${unit} last time. Log the weight you use today so the next ` +
         `${fmtNum(increment)} lb jump lands in the right place.`;
+    } else if (track === 'time_distance') {
+      // Nothing to hold or wear on a bike or a walk: the top of the range is the top.
+      message = `Every set hit ${fmtNum(hi)} ${unit} last time — the top of the range.`;
     } else {
       message =
         `Every set hit ${fmtNum(hi)} ${unit} last time — the top of the range. ` +
@@ -549,7 +556,8 @@ export function adjustForReadiness(target, readiness) {
   } else {
     const grain = num(src.roundTo) !== null && src.roundTo > 0 ? src.roundTo : ROUND_BARBELL;
     const scaled = roundToStep(weight * advice.factor, grain);
-    out.weight = scaled > 0 ? scaled : round1(grain);
+    // Rounding to the grain must never come out heavier: 12 lb × 0.95 rounds to 12.5.
+    out.weight = Math.min(weight, scaled > 0 ? scaled : round1(grain));
   }
 
   out.dropLastSet = advice.dropLastSet;

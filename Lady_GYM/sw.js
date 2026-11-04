@@ -118,7 +118,10 @@ self.addEventListener('fetch', (event) => {
         const res = await Promise.race([net, sleep(WAIT_MS).then(() => Promise.reject(new Error('slow')))]);
         if (res.ok) return res;
       } catch (_) { /* offline or slow: use the saved copy */ }
-      const cached = await caches.match(key, { ignoreSearch: true });
+      // Only from Lady_GYM's own cache. caches.match() searches every cache on the site, oldest
+      // first, and Daybreak's old worker saved copies of Lady_GYM files into daybreak-* caches on
+      // phones that had Daybreak — an out-of-date copy from there could break an offline start.
+      const cached = await (await caches.open(CACHE)).match(key, { ignoreSearch: true });
       if (cached) return cached;
       try { return await net; } catch (_) { return offline(); }
     })());
@@ -126,7 +129,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith((async () => {
-    const cached = await caches.match(req);
+    const cached = await (await caches.open(CACHE)).match(req);
     if (cached) return cached;
     try { return await fetchAndStore(req.url, req, {}); } catch (_) { return offline(); }
   })());

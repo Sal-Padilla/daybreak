@@ -131,7 +131,7 @@ export async function weekStreak() {
 
 export async function avatarHtml(profile) {
   const photo = await DB.getPref('avatar', null);
-  if (photo) return '<img src="' + photo + '" alt="">';
+  if (photo) return '<img src="' + esc(photo) + '" alt="">';
   return avatarArt((profile && profile.name) || '');
 }
 

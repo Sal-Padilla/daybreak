@@ -175,6 +175,13 @@ async function runAction(node, e) {
   }
 }
 
+// One tap, one action. A double tap used to run a button's action twice while the first run
+// was still saving: two workouts from one "Let's Go!", a set logged twice, two players
+// stacked. A tap on a button whose action is still running is ignored. The re-render that
+// ends most actions replaces the button anyway; the cap is for an action that never settles
+// (a photo picker closed without choosing), so its button cannot go dead.
+const busy = new WeakMap();      // node -> when its still-running action started
+
 function onClick(e) {
   if (e.target.closest('.sheet-layer, .alert-layer, .asheet-layer')) return;
   const node = e.target.closest('[data-action]');
@@ -182,7 +189,11 @@ function onClick(e) {
   if (node.tagName === 'INPUT' || node.tagName === 'SELECT' || node.tagName === 'TEXTAREA') return;
   if (node.tagName === 'A' && node.getAttribute('href') && node.getAttribute('href') !== '#') return;
   e.preventDefault();
-  runAction(node, e);
+  const started = busy.get(node);
+  if (started && Date.now() - started < 3000) return;
+  const t = Date.now();
+  busy.set(node, t);
+  runAction(node, e).finally(() => { if (busy.get(node) === t) busy.delete(node); });
 }
 
 function onField(e) {

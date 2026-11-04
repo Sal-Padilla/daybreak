@@ -483,9 +483,33 @@ function findMoveTarget(week, fromIndex, ctx, strict) {
     if (fromIndex - d >= 0) order.push(fromIndex - d);
   }
 
+  // The layout keeps the program's days in their written order, so a move can push the days
+  // between here and the target along. Only offer a target where each of them still has a
+  // morning it is allowed on. Otherwise the move is never honoured ("Move Legs & Bone to
+  // Tuesday?" with Upper on Wednesday), or it lands another lift before a class that forbids it.
+  const others = [];
+  for (let k = 0; k <= 4; k++) {
+    if (k !== fromIndex && week[k].session && week[k].session.programDayKey) others.push({ k, type: week[k].session.type });
+  }
+  const allowed = (d, type) => {
+    const c = ctx.dayClass[d];
+    if (c && isBlocked(c.format, type)) return false;
+    return !(LOWER_TYPES.has(type) && recoveryConflict(d, ctx));
+  };
+  const fits = (list, from, to) => {
+    let d = from;
+    for (const x of list) {
+      while (d <= to && !allowed(d, x.type)) d++;
+      if (d > to) return false;
+      d++;
+    }
+    return true;
+  };
+
   for (let i = 0; i < order.length; i++) {
     const j = order[i];
     if (j < 0 || j > 4) continue;
+    if (!fits(others.filter((x) => x.k < fromIndex), 0, j - 1) || !fits(others.filter((x) => x.k > fromIndex), j + 1, 4)) continue;
     const day = week[j];
     if (!day || day.session) continue;
 

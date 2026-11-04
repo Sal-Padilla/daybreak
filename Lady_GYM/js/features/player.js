@@ -51,7 +51,8 @@ let ticker = null;
 function reset() {
   view = 'intro'; spec = null; plan = null; focus = 0;
   targets = new Map(); drafts = new Map(); effortAsked = new Set();
-  includeWarmup = true; warm = null; stopRest(); summary = null;
+  // stopWarm, not `warm = null`: a warm-up timer left running drove the next workout's warm-up.
+  includeWarmup = true; stopWarm(); stopRest(); summary = null;
   if (ticker) { clearInterval(ticker); ticker = null; }
 }
 
@@ -64,7 +65,17 @@ function reset() {
  *   {short: true}           the ~30 minute version
  *   {empty: true}           build-your-own
  */
+let opening = false;
+
 export async function openPlayer(opts = {}) {
+  // One player at a time. A second tap on Start while the first was still opening stacked a
+  // second full-screen player, and that one stayed over the app after the workout was closed.
+  if (opening || Nav.isPresenting()) return null;
+  opening = true;
+  try { return await openNow(opts); } finally { opening = false; }
+}
+
+async function openNow(opts) {
   const active = Store.get('activeSession');
   reset();
   const profile = Store.get('profile');
@@ -98,10 +109,12 @@ export async function openPlayer(opts = {}) {
     const pick = await actionSheet('Which workout?', days.map((d) => ({ id: d.key, label: d.name }))
       .concat([{ id: '__empty', label: 'Build my own' }]));
     if (!pick) return null;
-    if (pick === '__empty') return openPlayer({ empty: true });
-    return openPlayer({ programDayKey: pick, short: opts.short });
+    if (pick === '__empty') return openNow({ empty: true });
+    return openNow({ programDayKey: pick, short: opts.short });
   }
-  plan = spec.programDayKey ? planFor(profile, spec) : { name: spec.name, type: spec.type, items: [], estMinutes: 0 };
+  // planFor() also fills the days with no program day (Saturday's sprints); skipping it here
+  // opened them empty while Today promised "1 exercise". Build-your-own still comes back empty.
+  plan = planFor(profile, spec);
   return Nav.present(playerPage, {});
 }
 
@@ -601,7 +614,8 @@ export const playerPage = {
       toast('Got it — I’ll use that next time', { ic: 'sparkle', ms: 1800 });
       return Nav.refresh();
     },
-    'rest-add'() { if (rest) { rest.timer.add(15); rest.total += 15; rest.left += 15; paintRest(); } },
+    // add() already reports the new time through onTick; adding 15 here as well showed 3:00 for 2:45.
+    'rest-add'() { if (rest) { rest.timer.add(15); rest.total = rest.timer.duration; rest.left = rest.timer.remaining; paintRest(); } },
     'rest-skip'() { stopRest(); paintRest(); },
     async 'ex-info'() {
       const item = currentItem();
@@ -692,7 +706,8 @@ function startWarmTimer() {
         arc.style.animation = 'none';
       }
     },
-    onDone: () => { if (warm) setTimeout(() => { if (warm) advanceWarm(); }, 900); },
+    // Only if she has not moved on herself in the meantime (a tap on Next at 0:00 skipped a move).
+    onDone: (timer) => { setTimeout(() => { if (warm && warm.timer === timer) advanceWarm(); }, 900); },
   });
   warm.timer.start();
 }

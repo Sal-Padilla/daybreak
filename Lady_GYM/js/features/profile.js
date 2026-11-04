@@ -132,7 +132,7 @@ export const profilePage = {
       ], { header: 'App' }) +
 
       group([
-        { lead: tile('download', 'var(--blue-fill)'), title: 'Back up my data', sub: backupAt ? 'Last backup ' + fmt.shortDate(backupAt.slice(0, 10)) : 'Never backed up', action: 'export' },
+        { lead: tile('download', 'var(--blue-fill)'), title: 'Back up my data', sub: backupAt ? 'Last backup ' + fmt.shortDate(DB.todayISO(new Date(backupAt))) : 'Never backed up', action: 'export' },
         { lead: tile('upload', 'var(--teal-fill)'), title: 'Restore from a backup', sub: 'Daybreak backups work too', action: 'import' },
         demo
           ? { lead: tile('sparkle', 'var(--sun-fill)'), title: 'Clear the demo data', action: 'clear-demo' }
@@ -146,8 +146,10 @@ export const profilePage = {
   },
 
   actions: {
-    async photo() {
-      const has = await DB.getPref('avatar', null);
+    async photo(node) {
+      // Read it off the screen, not the database: iPhone Safari opens the photo picker only while
+      // it is still handling the tap, and waiting for a database read first meant nothing opened.
+      const has = !!node.querySelector('img');
       const pick = has
         ? await actionSheet('Profile photo', [{ id: 'new', label: 'Choose a new photo' }, { id: 'remove', label: 'Remove photo', danger: true }])
         : 'new';
@@ -208,7 +210,7 @@ export const profilePage = {
             '<input class="input-inline num" id="hf" type="number" inputmode="numeric" placeholder="5" value="' + (p.heightIn ? Math.floor(p.heightIn / 12) : '') + '" aria-label="Feet"><span class="row-unit">ft</span>' +
             '<input class="input-inline num" id="hi" type="number" inputmode="numeric" placeholder="5" value="' + (p.heightIn ? Math.round(p.heightIn % 12) : '') + '" aria-label="Inches"><span class="row-unit">in</span></div>' +
           '<div class="row"><span class="row-main"><span class="row-title">Weight</span></span>' +
-            '<input class="input-inline num" id="wt" type="number" inputmode="decimal" placeholder="150" value="' + (p.weightLb || '') + '" aria-label="Weight in pounds"><span class="row-unit">lb</span></div>' +
+            '<input class="input-inline num" id="wt" type="number" inputmode="decimal" placeholder="150" value="' + esc(p.weightLb || '') + '" aria-label="Weight in pounds"><span class="row-unit">lb</span></div>' +
           '</div><p class="group-footer">Only used to set your protein goal and strength numbers.</p>',
         actions: {
           async save(n, d, h) {

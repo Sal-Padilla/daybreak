@@ -283,8 +283,8 @@ export const exercisePage = {
       history = sectionTitle('Your progress') +
         '<div class="card hist">' +
           '<div class="hist-nums">' +
-            '<div><p class="hist-k">Best set</p><p class="hist-v num">' + esc(fmt.num(best.s.weight)) + '<small> lb × ' + best.s.reps + '</small></p></div>' +
-            '<div><p class="hist-k">Last time</p><p class="hist-v num">' + esc(fmt.num(last.s.weight)) + '<small> lb × ' + last.s.reps + '</small></p></div>' +
+            '<div><p class="hist-k">Best set</p><p class="hist-v num">' + esc(fmt.num(best.s.weight)) + '<small> lb × ' + esc(best.s.reps) + '</small></p></div>' +
+            '<div><p class="hist-k">Last time</p><p class="hist-v num">' + esc(fmt.num(last.s.weight)) + '<small> lb × ' + esc(last.s.reps) + '</small></p></div>' +
           '</div>' +
           (series.length > 1 ? sparkline(series.map((x) => x.e1), { color: 'var(--pink-fill)', width: 300, height: 56 }) : '') +
           '<p class="card-sub">' + esc(fmt.plural(series.length, 'workout')) + ' logged</p>' +

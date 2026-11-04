@@ -119,8 +119,11 @@ export const page = {
       (day.classId ? ' — then your class.' : '') + '</p></div>' : '';
     const warns = (day && day.warnings ? day.warnings : []).map((w) =>
       '<div class="warncard">' + icon('info', 18) + '<div><p>' + esc(w.message) + '</p>' +
-      (w.fix && w.fix.programDayKey != null ? button({ label: 'Fix it for me', action: 'apply-fix', kind: 'tinted', size: 'sm', full: false,
-        data: { payload: JSON.stringify(w.fix) } }) : '') + '</div></div>').join('');
+      // The scheduler's fix is { action, payload: { programDayKey, toDayIndex } }; reading
+      // w.fix.programDayKey meant the button never showed. Only offered when there is a day to move to.
+      (w.fix && w.fix.action === 'move-session' && w.fix.payload && Number.isFinite(w.fix.payload.toDayIndex)
+        ? button({ label: 'Fix it for me', action: 'apply-fix', kind: 'tinted', size: 'sm', full: false,
+          data: { payload: JSON.stringify(w.fix.payload) } }) : '') + '</div></div>').join('');
 
     const empty = !ctx.classes.length && offset === 0
       ? '<div class="card intro-card">' + tile('sparkle', 'var(--blue-fill)', 38) +
@@ -163,6 +166,18 @@ export const page = {
 async function addClass({ format, dow, time, date }) {
   const f = classById(format);
   const dayName = DAY_NAMES[Number(dow)];
+  const same = ((await DB.getAll('classes')) || []).filter((c) => c.active !== false && c.formatId === format &&
+    Number(c.dayOfWeek) === Number(dow) && c.time === time);
+  // Already in her week, skipped on this date ("Skip just this week"): + puts the date back.
+  // Adding a second weekly copy doubled the class in every week after, and "Remove from every
+  // week" then left one behind.
+  const weekly = same.find((c) => !c.date);
+  if (weekly) {
+    haptic();
+    await DB.put('classes', { ...weekly, skipDates: (weekly.skipDates || []).filter((d) => d !== date) });
+    toast((f ? f.name : 'Class') + ' added — your week is updated', { tone: 'good', ic: 'calendarPlus' });
+    return Nav.invalidate();
+  }
   const pick = await actionSheet((f ? f.name : 'Class') + ' · ' + dayName + ' ' + fmt.clock(time), [
     { id: 'weekly', label: 'Every ' + dayName },
     { id: 'once', label: 'Just this once (' + fmt.shortDate(date) + ')' },
@@ -174,7 +189,10 @@ async function addClass({ format, dow, time, date }) {
     durationMin: f && f.durationMin ? f.durationMin : 50, active: true,
   };
   if (pick === 'once') rec.date = date;
+  // One-offs of this class are covered by the weekly record now (kept, that day showed it twice).
+  if (pick === 'weekly' && same.length) rec.bookedDates = [...new Set(same.flatMap((c) => c.bookedDates || []))];
   await DB.put('classes', rec);
+  if (pick === 'weekly') for (const c of same) await DB.del('classes', c.id);
   toast((f ? f.name : 'Class') + ' added — your week is updated', { tone: 'good', ic: 'calendarPlus' });
   return Nav.invalidate();
 }

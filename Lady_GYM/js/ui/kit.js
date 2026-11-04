@@ -200,18 +200,30 @@ export function sheet({ title = '', body = '', actions = {}, large = false, righ
   };
   openSheet = { layer, handle };
 
+  // A double tap acted twice: two measurements from one Save, an exercise added twice. While a
+  // tap's action is still running, or once this sheet is closing (it stays on screen while it
+  // slides away), a further tap does nothing.
+  const running = new WeakSet();
+  const run = (node, fn) => {
+    if (running.has(node)) return undefined;
+    const r = fn();
+    if (!r || typeof r.then !== 'function') return r;      // keypad keys: never held up
+    running.add(node);
+    return Promise.resolve(r).finally(() => running.delete(node));
+  };
   layer.addEventListener('click', async (e) => {
+    if (!openSheet || openSheet.layer !== layer) return;
     const s = e.target.closest('[data-sheet]');
     if (s) {
       const name = s.dataset.sheet;
       if (name === 'close') { closeSheet(); return; }
-      if (actions[name]) { await actions[name](s, s.dataset, handle); return; }
+      if (actions[name]) { await run(s, () => actions[name](s, s.dataset, handle)); return; }
     }
     const a = e.target.closest('[data-action]');
     if (a && panel.contains(a) && actions[a.dataset.action]) {
       if (a.tagName === 'INPUT' || a.tagName === 'SELECT' || a.tagName === 'TEXTAREA') return;
       e.stopPropagation();
-      await actions[a.dataset.action](a, a.dataset, handle);
+      await run(a, () => actions[a.dataset.action](a, a.dataset, handle));
     }
   });
   layer.addEventListener('input', (e) => {

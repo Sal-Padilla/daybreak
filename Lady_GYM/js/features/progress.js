@@ -131,7 +131,7 @@ export const page = {
         '<button type="button" class="pbcard" data-action="nav-push" data-page="exercise" data-id="' + esc(b.ex.id) + '">' +
           '<span class="pbcard-top">' + exThumb(b.ex) + '<span class="pbcard-trophy">' + icon('trophy', 16) + '</span></span>' +
           '<span class="pbcard-name">' + esc(b.ex.name) + '</span>' +
-          '<span class="pbcard-v num">' + esc(fmt.num(b.best.weight)) + ' lb × ' + b.best.reps + '</span>' +
+          '<span class="pbcard-v num">' + esc(fmt.num(b.best.weight)) + ' lb × ' + esc(b.best.reps) + '</span>' +
           '<span class="pbcard-gain">▲ ' + Math.round(b.pct * 100) + '% stronger</span>' +
           sparkline(b.series.slice(-10), { color: 'var(--pink-fill)', width: 130, height: 34 }) +
         '</button>').join('') + '</div>' : '') +
@@ -167,7 +167,7 @@ function photoStrip(pics) {
   }
   return '<div class="hscroll photos-row">' + add + pics.slice(0, 8).map((p) =>
     '<button type="button" class="photo" data-action="open-photo" data-id="' + esc(p.id) + '">' +
-      '<img src="' + p.data + '" alt="Progress photo from ' + esc(fmt.shortDate(p.date)) + '" loading="lazy">' +
+      '<img src="' + esc(p.data) + '" alt="Progress photo from ' + esc(fmt.shortDate(p.date)) + '" loading="lazy">' +
       '<span>' + esc(fmt.shortDate(p.date)) + '</span></button>').join('') + '</div>';
 }
 
@@ -222,7 +222,7 @@ async function openPhoto(id) {
   sheet({
     title: fmt.longDate(p.date),
     large: true,
-    body: '<img class="photo-big" src="' + p.data + '" alt="Progress photo">' +
+    body: '<img class="photo-big" src="' + esc(p.data) + '" alt="Progress photo">' +
       button({ label: 'Delete Photo', action: 'del', kind: 'danger', icon: 'trash' }),
     actions: {
       async del() {
@@ -247,12 +247,12 @@ export const photosPage = {
     const newest = pics[0];
     const compare = pics.length >= 2
       ? '<div class="card compare"><p class="card-title">Then and now</p><div class="compare-pair">' +
-        '<figure><img src="' + oldest.data + '" alt="First photo"><figcaption>' + esc(fmt.shortDate(oldest.date)) + '</figcaption></figure>' +
-        '<figure><img src="' + newest.data + '" alt="Latest photo"><figcaption>' + esc(fmt.shortDate(newest.date)) + '</figcaption></figure>' +
+        '<figure><img src="' + esc(oldest.data) + '" alt="First photo"><figcaption>' + esc(fmt.shortDate(oldest.date)) + '</figcaption></figure>' +
+        '<figure><img src="' + esc(newest.data) + '" alt="Latest photo"><figcaption>' + esc(fmt.shortDate(newest.date)) + '</figcaption></figure>' +
         '</div></div>' : '';
     return compare + '<div class="photo-grid">' + pics.map((p) =>
       '<button type="button" class="photo" data-action="open-photo" data-id="' + esc(p.id) + '">' +
-      '<img src="' + p.data + '" alt="Progress photo" loading="lazy"><span>' + esc(fmt.shortDate(p.date)) + '</span></button>').join('') + '</div>';
+      '<img src="' + esc(p.data) + '" alt="Progress photo" loading="lazy"><span>' + esc(fmt.shortDate(p.date)) + '</span></button>').join('') + '</div>';
   },
   actions: {
     'add-photo': () => addPhoto(),
