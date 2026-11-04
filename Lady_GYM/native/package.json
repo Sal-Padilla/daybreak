@@ -1,0 +1,20 @@
+{
+  "name": "lady-gym-native",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Wraps the Lady_GYM web app as a native iPhone app for TestFlight and the App Store. Build on a Mac with Xcode.",
+  "type": "module",
+  "scripts": {
+    "copy-web": "node copy-web.mjs",
+    "add-ios": "npm run copy-web && npx cap add ios",
+    "sync": "npm run copy-web && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

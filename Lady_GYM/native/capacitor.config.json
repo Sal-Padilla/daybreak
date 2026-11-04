@@ -1,0 +1,10 @@
+{
+  "appId": "com.salpadilla.ladygym",
+  "appName": "Lady_GYM",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#FF5A86",
+    "scrollEnabled": true
+  }
+}
