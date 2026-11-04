@@ -1,5 +1,10 @@
 # Daybreak — v0.9.2
 
+> **Lady_GYM is the successor.** Daybreak was turned down by the women it was sent to: not
+> friendly, not colourful, hard to navigate, not on their iPhones, not enough pictures.
+> [Lady_GYM/](Lady_GYM/) is the rebuild on the same training engine. What they meant and what
+> changed: [Lady_GYM/docs/REVIEW_OF_DAYBREAK.md](Lady_GYM/docs/REVIEW_OF_DAYBREAK.md).
+
 **Live: https://sal-padilla.github.io/daybreak/**
 
 A strength and body-composition app for women 30–55 training early mornings at
