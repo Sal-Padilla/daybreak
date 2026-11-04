@@ -12,7 +12,7 @@ import { card, btn, sheet, closeSheet, toast, confirmDialog, fmt } from '../ui/c
 export const id = 'me';
 export const title = 'Me';
 
-const VERSION = '0.9.2';
+const VERSION = '0.9.3';
 
 const STAGE_LABEL = {
   cycling: 'Regular cycles',
@@ -378,11 +378,16 @@ export const actions = {
   async 'force-update'() {
     toast('Getting the latest version…', 'calm');
     try {
+      // Daybreak's own worker and caches only. Lady_GYM shares this site with its own worker
+      // (scope ./Lady_GYM/) and lady-gym-* caches; clearing those took away its offline copy.
       if ('serviceWorker' in navigator) {
-        for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+        const scope = new URL('./', location.href).href;
+        for (const r of await navigator.serviceWorker.getRegistrations()) {
+          if (r.scope === scope) await r.unregister();
+        }
       }
       if (window.caches) {
-        for (const k of await caches.keys()) await caches.delete(k);
+        for (const k of await caches.keys()) if (k.startsWith('daybreak-')) await caches.delete(k);
       }
     } catch (err) {
       console.warn('Daybreak: could not clear the saved copy.', err);

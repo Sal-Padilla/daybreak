@@ -62,6 +62,28 @@ async function findOpenSession(date) {
 }
 
 /**
+ * A workout left open on an earlier day (she put the phone away instead of tapping Finish) is
+ * finished with the sets she logged. Only today's open workout is ever picked up again, so an
+ * earlier one vanished from History, her week and her rings, sets and all. One with nothing
+ * logged is left as it is.
+ */
+async function closeEarlierSessions(today) {
+  const open = ((await DB.getAll('sessions')) || []).filter((s) => s && !s.complete && s.date && s.date < today);
+  for (const s of open) {
+    const sets = await DB.getSessionSets(s.id);
+    if (!sets.length) continue;
+    const last = sets.reduce((m, x) => (x.loggedAt && String(x.loggedAt) > m ? String(x.loggedAt) : m), '');
+    await DB.put('sessions', { ...s, complete: true, endedAt: s.endedAt || last || s.startedAt || null });
+  }
+}
+
+async function closeEarlierSafely(today) {
+  try { await closeEarlierSessions(today); } catch (err) {
+    console.error('Lady_GYM Store: could not finish an earlier open workout.', err);
+  }
+}
+
+/**
  * Which week of the programme she is actually in, derived from startedOn.
  * The stored programWeek was written once at onboarding and never incremented, which froze
  * the deload countdown at week 1 forever.
@@ -87,6 +109,7 @@ export const Store = {
     state.profile = await DB.getProfile();
     state.dials = computeDials(state.profile);
 
+    await closeEarlierSafely(state.today);
     const session = await findOpenSession(state.today);
     state.activeSession = session;
     state.activeSets = session ? await DB.getSessionSets(session.id) : [];
@@ -159,6 +182,7 @@ export const Store = {
   /** Re-check for an open session on today's date (also refreshes `today`). */
   async reloadActiveSession() {
     state.today = DB.todayISO();
+    await closeEarlierSafely(state.today);
     const session = await findOpenSession(state.today);
     state.activeSession = session;
     state.activeSets = session ? await DB.getSessionSets(session.id) : [];

@@ -92,9 +92,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const offline = () => new Response('Lady_GYM is offline and this file is not saved yet.',
   { status: 503, headers: { 'content-type': 'text/plain' } });
 
+// The app's own folder, /daybreak/Lady_GYM/ on GitHub Pages.
+const SCOPE = new URL('./', self.location.href).pathname;
+
 async function fetchAndStore(url, key, init) {
   const res = await fetch(url, init);
-  if (res && res.ok && res.type === 'basic') {
+  if (key && res && res.ok && res.type === 'basic') {
     const cache = await caches.open(CACHE);
     await cache.put(key, res.clone());
   }
@@ -109,9 +112,13 @@ self.addEventListener('fetch', (event) => {
 
   if (req.mode === 'navigate' || isCode(url)) {
     const nav = req.mode === 'navigate';
-    // get.html is its own page; every other navigation in scope is the app shell.
-    const key = nav ? (url.pathname.endsWith('/get.html') ? './get.html' : './index.html') : req;
-    const net = fetchAndStore(url.href, key, { cache: 'no-cache', credentials: 'same-origin' });
+    // A page load is saved only as one of the app's two pages: the shell (the folder itself, or
+    // index.html) and get.html. Any other page in the folder — a docs page Pages renders, say — is
+    // fetched but never saved over the shell; offline it still falls back to the saved shell.
+    const page = url.pathname === SCOPE || url.pathname === SCOPE + 'index.html' ? './index.html'
+      : url.pathname === SCOPE + 'get.html' ? './get.html' : null;
+    const key = nav ? (page || './index.html') : req;
+    const net = fetchAndStore(url.href, nav ? page : req, { cache: 'no-cache', credentials: 'same-origin' });
     event.waitUntil(net.then(() => {}, () => {}));
     event.respondWith((async () => {
       try {
