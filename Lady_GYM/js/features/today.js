@@ -113,7 +113,7 @@ function heroDone(ctx, doneToday) {
       '<span class="hero-check">' + icon('check', 26) + '</span>' +
       '<h2 class="hero-title">You did it! 🎉</h2>' +
       '<p class="hero-meta">' + esc(lift.name || 'Workout') +
-        (mins > 1 ? ' · ' + mins + ' min' : '') + (sets ? ' · ' + sets + ' sets' : '') + '</p>' +
+        (mins > 1 ? ' · ' + mins + ' min' : '') + (sets ? ' · ' + fmt.plural(sets, 'set') : '') + '</p>' +
       '<p class="hero-note">Have some protein in the next hour — it’s when it counts most.</p>' +
     '</div></article>';
 }
@@ -323,7 +323,10 @@ export const page = {
     async 'preview-workout'() {
       const ctx = await weekContext();
       if (!ctx.day || !ctx.day.session) return;
-      return Nav.push('workout', { key: ctx.day.session.programDayKey || '', today: '1' });
+      const s = ctx.day.session;
+      // type and name let the page show a day with no program day (Saturday's sprints).
+      return Nav.push('workout', { key: s.programDayKey || '', today: '1', type: s.type, name: s.name,
+        mins: minutesOf(s.estMinutes, s.blockSize) });
     },
     'pick-workout'() { return Nav.tab('workouts'); },
     async 'log-class'(node) {
@@ -368,7 +371,9 @@ export const page = {
           esc(s.name || typeLabel(s.type)) + '</p><p class="card-sub">Done</p></div></div>');
       }
       if (d.session && !done.some((s) => s.programDayKey === d.session.programDayKey)) {
-        rows.push('<button type="button" class="dayrow" data-sheet="open-workout" data-key="' + esc(d.session.programDayKey || '') + '">' +
+        rows.push('<button type="button" class="dayrow" data-sheet="open-workout" data-key="' + esc(d.session.programDayKey || '') +
+          '" data-type="' + esc(d.session.type) + '" data-name="' + esc(d.session.name) + '" data-mins="' +
+          minutesOf(d.session.estMinutes, d.session.blockSize) + '" data-today="' + (d.date === ctx.today ? '1' : '') + '">' +
           tile('workouts', 'var(--' + (TYPE_COLOR[d.session.type] || 'pink') + '-fill)', 34) +
           '<div><p class="card-title">' + esc(d.session.name) + '</p><p class="card-sub">' +
           esc(fmt.clock(d.session.startTime) + ' · ~' + minutesOf(d.session.estMinutes, d.session.blockSize) + ' min') + '</p></div>' +
@@ -385,7 +390,11 @@ export const page = {
         title: fmt.longDate(d.date),
         body: '<div class="daylist">' + rows.join('') + '</div>' + warn,
         actions: {
-          'open-workout'(n) { closeSheet(); Nav.push('workout', { key: n.dataset.key }); },
+          'open-workout'(n) {
+            closeSheet();
+            const { key, type, name, mins, today } = n.dataset;
+            Nav.push('workout', { key, type, name, mins, today });
+          },
         },
       });
     },

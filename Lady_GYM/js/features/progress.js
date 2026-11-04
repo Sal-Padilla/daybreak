@@ -32,7 +32,8 @@ async function personalBests(limit = 6) {
     if (!by.has(s.exerciseId)) by.set(s.exerciseId, { best: s, e1, series: new Map() });
     const rec = by.get(s.exerciseId);
     if (e1 > rec.e1) { rec.best = s; rec.e1 = e1; }
-    const day = (s.loggedAt || '').slice(0, 10);
+    // Her day, not UTC's: after 4 pm in California loggedAt is already tomorrow's date.
+    const day = s.loggedAt ? DB.todayISO(new Date(s.loggedAt)) : '';
     rec.series.set(day, Math.max(rec.series.get(day) || 0, e1));
   }
   // "Getting stronger" means it: lifts whose estimated max went up, biggest gain first.
@@ -373,7 +374,10 @@ export const reportPage = {
         '<div class="area2"><div class="area2-top"><span>' + esc(v.label.replace('Side glute/hips', 'Hips')) + '</span><span class="num">' +
         fmt.num(v.done) + '/' + fmt.num(v.target) + '</span></div>' + bar(v.target ? v.done / v.target : 0, 'pink') + '</div>').join('') + '</div>' +
       (r.movers.length ? '<div class="card"><p class="card-title">' + icon('trophy', 18) + ' Getting stronger</p>' + r.movers.map((m) =>
-        '<p class="mover"><b>' + esc(m.name) + '</b><span class="num">' + fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb</span></p>').join('') + '</div>' : '') +
+        // "95 → 95 lb" reads like a bug: when the load held and the reps moved, say that.
+        '<p class="mover"><b>' + esc(m.name) + '</b><span class="num">' + (m.toWeight === m.fromWeight
+          ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+          : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb') + '</span></p>').join('') + '</div>' : '') +
       (r.body ? '<div class="card"><p class="card-title">' + icon('ruler', 18) + ' Measurements</p>' +
         '<p class="mover"><b>Waist</b><span class="num">' + fmt.num(r.body.waistIn) + '"</span></p>' +
         '<p class="mover"><b>Hips</b><span class="num">' + fmt.num(r.body.hipIn) + '"</span></p>' +

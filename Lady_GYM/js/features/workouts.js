@@ -116,7 +116,8 @@ export const page = {
           '<div class="hero-actions">' +
             (isToday ? button({ label: 'Start', action: 'start-today', kind: 'white', icon: 'play', full: false }) : '') +
             button({ label: 'View Workout', action: 'nav-push', kind: isToday ? 'glass' : 'white', full: false,
-              data: { page: 'workout', key: next.session.programDayKey || '' } }) +
+              data: { page: 'workout', key: next.session.programDayKey || '', type: next.session.type, name: next.session.name,
+                mins: minutesOf(next.session.estMinutes, next.session.blockSize), today: isToday ? '1' : '' } }) +
           '</div></div></article>';
     }
 
@@ -182,13 +183,18 @@ export const workoutPage = {
   id: 'workout',
   title: (p) => {
     const day = programDays(Store.get('profile')).find((d) => d.key === p.key);
-    return day ? day.name : 'Workout';
+    return day ? day.name : (p.name || 'Workout');
   },
 
   async render(params) {
     const profile = Store.get('profile');
     const days = programDays(profile);
-    const day = days.find((d) => d.key === params.key) || days[0];
+    // Saturday's sprints have no program day, so callers pass the session's type and name.
+    // Falling back to the first day previewed a 30-minute bike session as "Glutes & Hamstrings".
+    const day = days.find((d) => d.key === params.key) ||
+      (!params.key && params.type ? { key: '', name: params.name || typeLabel(params.type), type: params.type,
+        focus: [], estMinutes: Number(params.mins) || 0 } : null) ||
+      days[0];
     if (!day) return '<div class="empty"><p class="empty-title">No workout found</p></div>';
     const short = params.short === '1';
     const plan = resolvePlan(profile, {
@@ -211,9 +217,10 @@ export const workoutPage = {
         '<button type="button" class="seg' + (!short ? ' is-on' : '') + '" data-action="len" data-v="0">Full</button>' +
         '<button type="button" class="seg' + (short ? ' is-on' : '') + '" data-action="len" data-v="1">Short (~' + minutesOf(day.estMinutes, 'short') + ' min)</button>' +
       '</div>' +
-      '<div class="wdetail-cta">' +
+      // Start with no program day starts today's session, so a weekend day offers it only on the day.
+      (day.key || params.today === '1' ? '<div class="wdetail-cta">' +
         button({ label: 'Start This Workout', action: 'start', kind: 'primary', icon: 'play', data: { key: day.key } }) +
-      '</div>' +
+      '</div>' : '') +
       (equip.length ? '<p class="wdetail-equip">' + icon('workouts', 16) + ' You’ll use: ' + esc(equip.join(', ')) + '</p>' : '') +
       '<div class="group-body exlist">' + plan.items.map((it, i) =>
         '<button type="button" class="exrow" data-action="nav-push" data-page="exercise" data-id="' + esc(it.exerciseId) + '">' +
@@ -414,7 +421,7 @@ export const sessionPage = {
         '<h1>' + esc(s.name || typeLabel(s.type)) + '</h1>' +
         '<div class="sdetail-stats">' +
           (mins > 1 ? '<span><b class="num">' + mins + '</b> min</span>' : '') +
-          (sets.length ? '<span><b class="num">' + sets.length + '</b> sets</span>' : '') +
+          (sets.length ? '<span><b class="num">' + sets.length + '</b> ' + (sets.length === 1 ? 'set' : 'sets') + '</span>' : '') +
           (volume ? '<span><b class="num">' + fmt.num(volume, 0) + '</b> lb lifted</span>' : '') +
         '</div></div>' +
       [...byEx.entries()].map(([eid, list]) => {

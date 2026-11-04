@@ -118,7 +118,9 @@ export async function buildReport(weekOf) {
   movers.sort((a, b) => b.pctGain - a.pctGain);
 
   // --- measurements: the headline is waist-to-hip, never bodyweight
-  const measurements = (await DB.getAll('measurements')) || [];
+  // Tape measurements only: an InBody scan has no waist or hips, and as the newest record it
+  // blanked both from the report, and the recomposition check with them.
+  const measurements = ((await DB.getAll('measurements')) || []).filter((m) => m && (m.waistIn || m.hipIn));
   measurements.sort((a, b) => (a.date < b.date ? -1 : 1));
   const latest = measurements.length ? measurements[measurements.length - 1] : null;
   const twoWeeksBack = latest ? nearest(measurements, shiftDays(latest.date, -14), 10) : null;
@@ -222,8 +224,11 @@ export function reportText(r) {
   if (r.movers.length) {
     L.push('MOVING UP');
     for (const m of r.movers) {
-      L.push('  ' + m.name + '  ' + fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
-        (m.pctGain ? '  (+' + fmt.pct(m.pctGain) + ')' : ''));
+      // "95 → 95 lb (+5%)" reads like a bug. When the load held and the reps moved, say that.
+      L.push('  ' + m.name + '  ' + (m.toWeight === m.fromWeight
+        ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+        : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
+          (m.pctGain ? '  (+' + fmt.pct(m.pctGain) + ')' : '')));
     }
     L.push('');
   }

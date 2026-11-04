@@ -212,7 +212,10 @@ function rowDraft(item, i) {
   const d = {
     weight: prev && prev.weight != null ? prev.weight : (t.weight != null ? t.weight : null),
     reps: prev && prev.reps != null ? prev.reps : (t.reps != null ? t.reps : (item.reps ? item.reps[1] : 10)),
-    seconds: prev && prev.seconds != null ? prev.seconds : (t.seconds != null ? t.seconds : 30),
+    // nextTarget() gives a timed target in `reps`: seconds for a hold, minutes for cardio.
+    seconds: prev && prev.seconds != null ? prev.seconds
+      : t.reps != null && item.exercise.track === 'time_hold' ? t.reps
+        : t.reps != null && item.exercise.track === 'time_distance' ? t.reps * 60 : 30,
     distance: prev && prev.distance != null ? prev.distance : null,
   };
   list[i] = d;
@@ -666,7 +669,7 @@ export const playerPage = {
     finish() { return finish(); },
     async 'share-done'() {
       const s = summary;
-      const text = 'I just finished ' + (s.name || 'my workout') + ' with Lady_GYM: ' + fmt.mmss(s.seconds) + ', ' + s.sets + ' sets' +
+      const text = 'I just finished ' + (s.name || 'my workout') + ' with Lady_GYM: ' + fmt.mmss(s.seconds) + ', ' + fmt.plural(s.sets, 'set') +
         (s.prs.length ? ' and a new personal best on ' + s.prs[0].name : '') + '! 💪';
       try {
         if (navigator.share) await navigator.share({ text });
