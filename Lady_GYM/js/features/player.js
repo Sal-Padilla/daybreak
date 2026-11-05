@@ -232,10 +232,15 @@ function currentItem() {
   return plan && plan.items.length ? plan.items[Math.min(focus, plan.items.length - 1)] : null;
 }
 
+/** The lightest a bar goes: an empty Olympic, trap or Smith bar is 45 lb. 0 for everything else. */
+function emptyBar(ex) {
+  const eq = ex.equipment || [];
+  return eq.includes('barbell') || eq.includes('trapbar') || eq.includes('smith') ? 45 : 0;
+}
+
 function startingWeights(ex) {
   const eq = ex.equipment || [];
-  // Nothing below the empty bar (45 lb), whichever bar: Olympic, trap bar or Smith machine.
-  if (eq.includes('barbell') || eq.includes('trapbar') || eq.includes('smith')) return [45, 55, 65, 75, 95];
+  if (emptyBar(ex)) return [45, 55, 65, 75, 95];
   if (eq.includes('kettlebell')) return [10, 15, 20, 25, 35];
   if (eq.includes('dumbbell')) return [5, 8, 10, 12, 15, 20];
   if (eq.includes('machine') || eq.includes('cable')) return [20, 30, 40, 50, 60, 70];
@@ -559,7 +564,8 @@ export const playerPage = {
       }[field];
       const t = targets.get(item.exerciseId);
       const quick = field === 'weight' && cfg.value != null
-        ? [cfg.value - cfg.step * 2, cfg.value - cfg.step, cfg.value + cfg.step, cfg.value + cfg.step * 2].filter((v) => v > 0)
+        ? [cfg.value - cfg.step * 2, cfg.value - cfg.step, cfg.value + cfg.step, cfg.value + cfg.step * 2]
+          .filter((v) => v > 0 && v >= Math.min(emptyBar(item.exercise), cfg.value))
         : field === 'reps' ? [item.reps[0], Math.round((item.reps[0] + item.reps[1]) / 2), item.reps[1]] : [];
       if (field === 'weight' && t && t.weight != null && !quick.includes(t.weight)) quick.unshift(t.weight);
       // First time on this lift: offer typical starting weights for the equipment.
