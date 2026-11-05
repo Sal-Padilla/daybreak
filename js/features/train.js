@@ -98,7 +98,11 @@ function draftFor(item) {
   const d = {
     weight: last ? last.weight : (t && t.weight != null ? t.weight : null),
     reps: last ? last.reps : (t && t.reps != null ? t.reps : (item.reps ? item.reps[0] : 10)),
-    seconds: last ? last.seconds : 30,
+    // nextTarget() gives a timed target in `reps`: seconds for a hold, minutes for cardio. Reading
+    // t.seconds, which is never set, pre-filled 30 s for every hold and every sprint session.
+    seconds: last ? last.seconds
+      : t && t.reps != null && item.exercise.track === 'time_hold' ? t.reps
+        : t && t.reps != null && item.exercise.track === 'time_distance' ? t.reps * 60 : 30,
     distance: last && last.distance != null ? last.distance : null,
   };
   drafts.set(item.exerciseId, d);
@@ -328,7 +332,8 @@ function setsAndRepsLabel(item) {
     if (item.sets > 1) return item.sets + ' rounds';
     return ex.track === 'time_distance' ? 'one session' : 'one hold';
   }
-  return item.sets + ' × ' + item.reps[0] + '–' + item.reps[1];
+  // A fixed count reads "5 × 5", not "5 × 5–5".
+  return item.sets + ' × ' + (item.reps[0] === item.reps[1] ? item.reps[0] : item.reps[0] + '–' + item.reps[1]);
 }
 
 function exerciseCard(item) {
@@ -345,7 +350,8 @@ function exerciseCard(item) {
     // "10 reps · leave 5 in the tank" on a sprint-interval session is not just noise, it
     // is wrong — there is no rep to leave in any tank.
     if (isTimed(ex)) {
-      if (t.seconds != null) parts.push(Math.round(t.seconds / 60) + ' min');
+      // The target is in `reps`: seconds for a hold, minutes for cardio (t.seconds is never set).
+      if (t.reps != null) parts.push(ex.track === 'time_hold' ? t.reps + ' s' : t.reps + ' min');
       if (item.sets > 1) parts.push(item.sets + ' rounds');
     } else {
       if (t.weight != null) parts.push(fmt.num(t.weight) + ' lb');
@@ -606,9 +612,17 @@ async function refreshTargets(dials) {
   const readiness = session && session.readiness ? readinessAdvice(readinessScore(session.readiness)) : null;
 
   for (const item of plan.items) {
+    // A rough morning drops the last set of each movement, as the check-in promises — once per
+    // item, and never below one set.
+    if (readiness && readiness.dropLastSet && !item.lastSetDropped && item.sets > 1) {
+      item.sets -= 1;
+      item.lastSetDropped = true;
+    }
     const history = await DB.getExerciseSets(item.exerciseId);
     const prior = (history || []).filter((s) => s.sessionId !== (session && session.id) && !s.isWarmup);
-    let t = nextTarget(prior, item.exercise, { ...dials, topSetReps: item.reps });
+    // Today's range and set count, so a dropped set is not read as a miss and the message
+    // matches the rows on screen.
+    let t = nextTarget(prior, item.exercise, { ...dials, topSetReps: item.reps }, { reps: item.reps, sets: item.sets });
     if (readiness) t = adjustForReadiness(t, readiness);
     targets.set(item.exerciseId, t);
   }
@@ -902,6 +916,7 @@ export const actions = {
             const replacement = itemFromExercise(ex);
             replacement.sets = item.sets;
             replacement.reps = item.reps;
+            replacement.lastSetDropped = item.lastSetDropped;
             plan.items[focusIndex] = replacement;
             drafts.delete(item.exerciseId);
             closeSheet();

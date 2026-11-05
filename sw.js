@@ -5,7 +5,9 @@
 // v0.9.3: the v0.9.2 worker had no Lady_GYM bypass, so on a phone that opened Lady_GYM's link
 // before this one arrived, daybreak-v0.9.2 holds Lady_GYM's pages (one saved as Daybreak's
 // index.html) and copies of its files. The new name sweeps all of that away in one go.
-const CACHE = 'daybreak-v0.9.3';
+// v0.9.4: engine fixes ported from Lady_GYM. A new worker is also what reloads a resumed Home
+// Screen app onto new code (activate → client.navigate), so a release that changes code bumps it.
+const CACHE = 'daybreak-v0.9.4';
 
 // Lady_GYM lives at ./Lady_GYM/ (short link ./ladygym/) on the same site, inside this worker's
 // scope, with its own service worker and its own lady-gym-* caches. Daybreak leaves all of it alone.

@@ -470,7 +470,8 @@ export async function render(el) {
   const shape = weeklyShapeMap(done, sets, classes, dials);
   const pill = weeklyPillars(done, sets, byId, classById, dials);
   const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart);
-  const recs = recommendations({ profile, dials, week, pillars: pill, shape, classes, sessions });
+  // todayISO: without it the engine used the UTC date — tomorrow, after 4–5 pm in California.
+  const recs = recommendations({ profile, dials, week, pillars: pill, shape, classes, sessions, todayISO: DB.todayISO() });
 
   const measurements = ((await DB.getAll('measurements')) || [])
     .slice().sort((a, b) => (a.date < b.date ? -1 : 1));

@@ -283,8 +283,10 @@ function noteCard(profile, day, plan, dials) {
 
   if (!notes.length) return '';
 
-  // Rotate by day-of-year so it changes without being random.
-  const seed = Math.floor(Date.now() / 86400000);
+  // Rotate by day so it changes without being random — her calendar day, not UTC's (which
+  // turns over at 4–5 pm in California).
+  const now = new Date();
+  const seed = Math.round(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
   const note = notes[seed % notes.length];
 
   return '<div class="note-strip"><span class="note-mark" aria-hidden="true"></span><p>' + esc(note) + '</p></div>';
@@ -370,6 +372,7 @@ export async function render(el) {
   const recs = recommendations({
     profile, dials, week, pillars: pill, shape,
     classes: classes || [], sessions: sessions || [],
+    todayISO: today,   // without it the engine used the UTC date: tomorrow, after 4–5 pm in California
   });
   const topRec = recs.find((r) => r.kind !== 'good') || null;
 

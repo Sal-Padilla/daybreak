@@ -129,7 +129,9 @@ export async function buildReport(weekOf) {
   movers.sort((a, b) => b.pctGain - a.pctGain);
 
   // --- measurements: the headline is waist-to-hip, never bodyweight
-  const measurements = (await DB.getAll('measurements')) || [];
+  // Tape measurements only: an InBody scan has no waist or hips, and as the newest record it
+  // blanked both from the report, and the recomposition check with them.
+  const measurements = ((await DB.getAll('measurements')) || []).filter((m) => m && (m.waistIn || m.hipIn));
   measurements.sort((a, b) => (a.date < b.date ? -1 : 1));
   const latest = measurements.length ? measurements[measurements.length - 1] : null;
   const twoWeeksBack = latest ? nearest(measurements, shiftDays(latest.date, -14), 10) : null;
@@ -271,7 +273,7 @@ export function reportHtml(report) {
     bodyBlock =
       '<div class="measure-hero">' +
         '<span class="measure-hero-label">Waist to hip</span>' +
-        '<span class="measure-hero-value num">' + (r.body.whr != null ? fmt.num(r.body.whr) : '—') + '</span>' +
+        '<span class="measure-hero-value num">' + (r.body.whr != null ? r.body.whr.toFixed(2) : '—') + '</span>' +
         // Three decimals: a real fortnight of waist-to-hip change is a few thousandths,
         // and fmt.num would round it away to "0".
         (d && d.whr != null && Math.abs(d.whr) >= 0.0005
@@ -368,8 +370,12 @@ export function reportText(r) {
   if (r.movers.length) {
     L.push('MOVING UP');
     for (const m of r.movers) {
-      L.push('  ' + m.name + '  ' + fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
-        (m.pctGain ? '  (+' + fmt.pct(m.pctGain) + ')' : ''));
+      // "30 → 30 lb (+5%)" reads like a bug. When the load held and the reps moved, say that —
+      // as the report page already does.
+      L.push('  ' + m.name + '  ' + (m.toWeight === m.fromWeight
+        ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+        : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
+          (m.pctGain ? '  (+' + fmt.pct(m.pctGain) + ')' : '')));
     }
     L.push('');
   }
@@ -378,7 +384,8 @@ export function reportText(r) {
     L.push('MEASUREMENTS');
     if (r.body.waistIn != null) L.push('  Waist       ' + fmt.num(r.body.waistIn) + '"');
     if (r.body.hipIn != null) L.push('  Hips        ' + fmt.num(r.body.hipIn) + '"');
-    if (r.body.whr != null) L.push('  Waist:Hip   ' + fmt.num(r.body.whr) + '   <- the one that matters');
+    // Two places: fmt.num keeps one, and 0.78 would read as 0.8.
+    if (r.body.whr != null) L.push('  Waist:Hip   ' + r.body.whr.toFixed(2) + '   <- the one that matters');
     if (r.body.weightLb != null) L.push('  Weight      ' + fmt.num(r.body.weightLb) + ' lb');
     if (r.recomposition) {
       L.push('');

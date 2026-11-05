@@ -187,7 +187,7 @@ export function exerciseInfo(exercise) {
     flags.push('Loads the spine directly. Excellent for bone, but not the first thing to do at 5:30 — give yourself twenty minutes upright first.');
   }
   if (exercise.pelvicFloorRisk === 'high') {
-    flags.push('Higher pressure on the pelvic floor. Exhale through the hard part rather than holding your breath. If you leak, say so in your profile and this gets swapped automatically.');
+    flags.push('Higher pressure on the pelvic floor. Exhale through the hard part rather than holding your breath.');
   }
   if (exercise.unilateral) {
     flags.push('One side at a time — it evens out left/right differences you cannot see in a two-legged lift.');

@@ -1,4 +1,4 @@
-# Daybreak — v0.9.3
+# Daybreak — v0.9.4
 
 > **Lady_GYM is the successor.** Daybreak was turned down by the women it was sent to: not
 > friendly, not colourful, hard to navigate, not on their iPhones, not enough pictures.
