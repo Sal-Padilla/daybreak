@@ -198,6 +198,12 @@ function incrementFor(exercise) {
   return STEP_UPPER;
 }
 
+// The lightest a bar can be loaded: an empty Olympic, trap or Smith bar is 45 lb.
+function emptyBarFor(exercise) {
+  const equipment = listOf(isObj(exercise) ? exercise.equipment : null);
+  return equipment.some((e) => e === 'barbell' || e === 'trapbar' || e === 'smith') ? 45 : 0;
+}
+
 // Rounding grain for readiness scaling: dumbbells and kettlebells come in 2.5 lb steps per hand.
 function roundingFor(exercise) {
   const equipment = listOf(isObj(exercise) ? exercise.equipment : null);
@@ -350,7 +356,7 @@ export function estimate1RM(weight, reps) {
  *                          range and set count the screen shows, so the message matches them.
  * @returns {{weight:number|null, reps:number, sets:number, rir:number, reason:string,
  *            message:string, exerciseId:string|null, track:string, repRange:number[],
- *            increment:number, roundTo:number, dropLastSet:boolean, swapTo:string|null,
+ *            increment:number, roundTo:number, minWeight:number, dropLastSet:boolean, swapTo:string|null,
  *            lastWeight:number|null, lastReps:number|null}}
  */
 export function nextTarget(history, exercise, dials, plan) {
@@ -374,6 +380,7 @@ export function nextTarget(history, exercise, dials, plan) {
     repRange: [lo, hi],
     increment,
     roundTo,
+    minWeight: emptyBarFor(exercise),
     dropLastSet: false,
     swapTo: null,
     lastWeight: null,
@@ -574,8 +581,10 @@ export function adjustForReadiness(target, readiness) {
   } else {
     const grain = num(src.roundTo) !== null && src.roundTo > 0 ? src.roundTo : ROUND_BARBELL;
     const scaled = roundToStep(weight * advice.factor, grain);
-    // Rounding to the grain must never come out heavier: 12 lb × 0.95 rounds to 12.5.
-    out.weight = Math.min(weight, scaled > 0 ? scaled : round1(grain));
+    // Rounding to the grain must never come out heavier: 12 lb × 0.95 rounds to 12.5. Nor below
+    // an empty bar she is already lifting: 45 lb × 0.9 is not a weight a bar can be.
+    const floor = Math.min(weight, num(src.minWeight) || 0);
+    out.weight = Math.max(floor, Math.min(weight, scaled > 0 ? scaled : round1(grain)));
   }
 
   out.dropLastSet = advice.dropLastSet;

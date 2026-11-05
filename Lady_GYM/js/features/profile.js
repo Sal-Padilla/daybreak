@@ -259,15 +259,26 @@ export const profilePage = {
         const json = JSON.stringify(data);
         const name = 'lady-gym-backup-' + DB.todayISO() + '.json';
         const file = new File([json], name, { type: 'application/json' });
-        // On iPhone the share sheet is the friendly way: Save to Files, AirDrop, Mail.
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Lady_GYM backup' });
-        } else {
+        // On iPhone the share sheet is the friendly way: Save to Files, AirDrop, Mail. iOS can refuse
+        // it once the tap is a moment old (the database is read first), so anything but her
+        // cancelling falls back to a plain download, as Daybreak did — never "Could not make the backup".
+        let shared = false;
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: 'Lady_GYM backup' });
+            shared = true;
+          } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            console.warn('Lady_GYM: share refused, downloading instead.', err);
+          }
+        }
+        if (!shared) {
           const url = URL.createObjectURL(file);
           const a = document.createElement('a');
           a.href = url; a.download = name;
           document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          // Kept a minute: iPhone asks "Download?" first, and the file must still be there then.
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
         }
         await DB.setPref('backup:at', new Date().toISOString());
         toast('Backup ready — keep it somewhere safe', { tone: 'good', ic: 'download' });
