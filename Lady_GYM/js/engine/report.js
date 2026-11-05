@@ -237,7 +237,7 @@ export function reportText(r) {
     L.push('MEASUREMENTS');
     if (r.body.waistIn != null) L.push('  Waist       ' + fmt.num(r.body.waistIn) + '"');
     if (r.body.hipIn != null) L.push('  Hips        ' + fmt.num(r.body.hipIn) + '"');
-    if (r.body.whr != null) L.push('  Waist:Hip   ' + fmt.num(r.body.whr) + '   <- the one that matters');
+    if (r.body.whr != null) L.push('  Waist:Hip   ' + fmt.num(r.body.whr, 2) + '   <- the one that matters');
     if (r.body.weightLb != null) L.push('  Weight      ' + fmt.num(r.body.weightLb) + ' lb');
     if (r.recomposition) {
       L.push('');
