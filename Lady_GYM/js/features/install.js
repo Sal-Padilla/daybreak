@@ -68,13 +68,17 @@ export function getUrl() {
 /* ------------------------------------------------------------------ the drawn steps */
 
 const PINK = '#FF2D78';
+let drawings = 0;
 
 function phone(inner, label) {
+  // Each drawing gets its own gradient ids: one guide shows the same page picture up to three times.
+  const n = ++drawings;
+  const own = inner.replace(/(id="|url\(#)(pg|ic)(?=[")])/g, '$1$2-' + n);
   return '<svg class="phone" viewBox="0 0 120 210" role="img" aria-label="' + esc(label) + '">' +
     '<rect x="4" y="2" width="112" height="206" rx="20" fill="#1C1C1E"/>' +
     '<rect x="9" y="7" width="102" height="196" rx="16" fill="#F2F2F7"/>' +
     '<rect x="44" y="11" width="32" height="8" rx="4" fill="#1C1C1E"/>' +
-    inner + '</svg>';
+    own + '</svg>';
 }
 
 function pulse(cx, cy, r) {

@@ -242,7 +242,9 @@ const TIPS = [
 ];
 
 function tipCard() {
-  const i = Math.floor(Date.now() / 86400000) % TIPS.length;
+  // Her calendar day, not UTC's (which turns over at 4–5 pm in California).
+  const d = new Date();
+  const i = Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000) % TIPS.length;
   const tip = TIPS[i];
   return '<div class="card tip"><span class="tip-ic">' + icon('sparkle', 20) + '</span>' +
     '<div><p class="tip-kicker">Tip of the day</p><p class="card-title">' + esc(tip.t) + '</p>' +

@@ -464,7 +464,17 @@ export async function isDemoData() {
   return !!(await DB.getPref(SEED_FLAG, false));
 }
 
-/** Wipe everything, including the demo flag. */
+/**
+ * Remove what the demo wrote, and only that: the history it replaced, the profile it overwrote
+ * (so she starts fresh), and its own prefs. Progress photos and her avatar were never part of
+ * the demo — seeding leaves them — so clearing it must not delete them either.
+ */
 export async function clearDemoData() {
-  await DB.clearAll();
+  for (const store of ['profile', 'sessions', 'sets', 'measurements', 'classes', 'cycleLog', 'reports']) {
+    await DB.clear(store);
+  }
+  for (const row of await DB.getAll('prefs')) {
+    const key = String(row.key);
+    if (key === SEED_FLAG || key === 'backup:at' || key.startsWith('protein:')) await DB.del('prefs', row.key);
+  }
 }

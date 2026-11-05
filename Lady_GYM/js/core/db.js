@@ -128,12 +128,29 @@ function openDB() {
   return dbPromise;
 }
 
+/** iOS can close the connection while the app sits in the background; the next call then fails. */
+function connectionLost(err) {
+  if (!err) return false;
+  if (err.name === 'InvalidStateError' || err.name === 'UnknownError') return true;
+  return /closing|closed|connection|lost/i.test(String(err.message || ''));
+}
+
 /**
  * Run `work(store, setResult)` inside one transaction.
  * Resolves on transaction completion (durable), rejects with the real error.
+ * A connection the phone closed is reopened and the work tried once more (every write here is a
+ * put, delete or clear, so running it twice is safe) — a ticked set must not be silently lost.
  */
-function run(storeName, mode, work) {
+function run(storeName, mode, work, retried) {
   assertStore(storeName);
+  return attempt(storeName, mode, work).catch((err) => {
+    if (retried || !connectionLost(err)) throw err;
+    dbPromise = null;
+    return run(storeName, mode, work, true);
+  });
+}
+
+function attempt(storeName, mode, work) {
   return openDB().then((db) => new Promise((resolve, reject) => {
     let tx;
     try {

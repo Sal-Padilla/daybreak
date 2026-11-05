@@ -356,10 +356,11 @@ export function restArt(opts = {}) {
 /** Little round avatar illustration for when she has not added a photo. */
 export function avatarArt(name) {
   const cast = castFor('avatar-' + (name || ''));
+  const id = 'av' + (++uid);    // one per copy: every tab shows an avatar, and the hidden tabs' come first
   return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<defs><linearGradient id="av" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5C93"/>' +
+    '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5C93"/>' +
     '<stop offset="1" stop-color="#FFB37A"/></linearGradient></defs>' +
-    '<circle cx="32" cy="32" r="32" fill="url(#av)"/>' +
+    '<circle cx="32" cy="32" r="32" fill="url(#' + id + ')"/>' +
     '<circle cx="32" cy="27" r="13" fill="' + cast.hair + '"/>' +
     '<path d="M44 22 q10 8 4 22" stroke="' + cast.hair + '" stroke-width="6" fill="none" stroke-linecap="round"/>' +
     '<circle cx="31" cy="29" r="10.5" fill="' + cast.skin + '"/>' +

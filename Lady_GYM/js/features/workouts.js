@@ -9,6 +9,7 @@ import { Store } from '../core/store.js';
 import { EXERCISES, byId, SHAPE_TARGETS } from '../data/exercises.js';
 import { exerciseInfo, diagramKeyFor, howToUrl } from '../data/info.js';
 import { estimate1RM } from '../engine/progression.js';
+import { readinessScore, readinessAdvice } from '../engine/readiness.js';
 import { figureSvg, figureAnim, diagramSetup } from '../art/figure.js';
 import { workoutArt, workoutTheme, themeBg } from '../art/scenes.js';
 import { icon, tile } from '../ui/icons.js';
@@ -18,6 +19,7 @@ import {
   weekContext, resolvePlan, heroKeyFor, programDays, avatarButton, typeLabel, minutesOf,
   TYPE_COLOR, AREA_COLOR,
 } from './shared.js';
+import { todaysReadiness } from './today.js';
 
 /* ------------------------------------------------------------------ pieces */
 
@@ -28,11 +30,13 @@ export function exThumb(ex, { size = '' } = {}) {
     '<span class="ex-thumb-blank">' + icon('workouts', 26) + '</span>') + '</span>';
 }
 
-function schemeLabel(item) {
+function schemeLabel(item, dropLastSet) {
   const ex = item.exercise;
-  if (ex.track === 'time_hold') return item.sets + ' × hold';
-  if (ex.track === 'time_distance') return item.sets > 1 ? item.sets + ' rounds' : 'Steady';
-  return item.sets + ' × ' + item.reps[0] + '–' + item.reps[1];
+  // After a rough check-in the player drops the last set of each movement; show the same count.
+  const sets = dropLastSet && item.sets > 1 ? item.sets - 1 : item.sets;
+  if (ex.track === 'time_hold') return sets + ' × hold';
+  if (ex.track === 'time_distance') return sets > 1 ? sets + ' rounds' : 'Steady';
+  return sets + ' × ' + item.reps[0] + '–' + item.reps[1];
 }
 
 function areaChips(ex) {
@@ -197,6 +201,8 @@ export const workoutPage = {
       days[0];
     if (!day) return '<div class="empty"><p class="empty-title">No workout found</p></div>';
     const short = params.short === '1';
+    const checkIn = await todaysReadiness();
+    const dropLastSet = !!(checkIn && readinessAdvice(readinessScore(checkIn)).dropLastSet);
     const plan = resolvePlan(profile, {
       programDayKey: day.key, type: day.type, name: day.name, focus: day.focus,
       estMinutes: day.estMinutes, blockSize: short ? 'short' : 'full',
@@ -227,7 +233,7 @@ export const workoutPage = {
           exThumb(it.exercise) +
           '<span class="exrow-main"><span class="exrow-n">' + (i + 1) + '</span>' +
             '<span class="exrow-name">' + esc(it.exercise.name) + '</span>' +
-            '<span class="exrow-meta">' + esc(schemeLabel(it)) + '</span></span>' +
+            '<span class="exrow-meta">' + esc(schemeLabel(it, dropLastSet)) + '</span></span>' +
           '<span class="row-chev">' + icon('chevronRight', 16) + '</span></button>').join('') +
       '</div>' +
       '</div>';
@@ -278,14 +284,22 @@ export const exercisePage = {
     const sets = ((await DB.getExerciseSets(ex.id)) || []).filter((s) => !s.isWarmup);
     let history = '';
     if (sets.length && ex.track === 'weight_reps') {
+      // estimate1RM() is null above 12 reps by design. Without an estimate on both sides the
+      // heavier set wins, then the one with more reps — not "the first set ever logged".
+      const beats = (a, b) => {
+        const ea = estimate1RM(a.weight, a.reps);
+        const eb = estimate1RM(b.weight, b.reps);
+        if (ea != null && eb != null) return ea > eb;
+        return (a.weight || 0) > (b.weight || 0) || ((a.weight || 0) === (b.weight || 0) && (a.reps || 0) > (b.reps || 0));
+      };
       const bySession = new Map();
       for (const s of sets) {
-        const e1 = estimate1RM(s.weight, s.reps) || 0;
         const cur = bySession.get(s.sessionId);
-        if (!cur || e1 > cur.e1) bySession.set(s.sessionId, { e1, s });
+        if (!cur || beats(s, cur.s)) bySession.set(s.sessionId, { e1: estimate1RM(s.weight, s.reps) || 0, s });
       }
       const series = [...bySession.values()].sort((a, b) => (a.s.loggedAt < b.s.loggedAt ? -1 : 1));
-      const best = series.reduce((m, x) => (x.e1 > m.e1 ? x : m), series[0]);
+      const best = series.reduce((m, x) => (beats(x.s, m.s) ? x : m), series[0]);
+      const byE1 = series.every((x) => x.e1 > 0);   // else the line follows the weight
       const last = series[series.length - 1];
       history = sectionTitle('Your progress') +
         '<div class="card hist">' +
@@ -293,7 +307,7 @@ export const exercisePage = {
             '<div><p class="hist-k">Best set</p><p class="hist-v num">' + esc(fmt.num(best.s.weight)) + '<small> lb × ' + esc(best.s.reps) + '</small></p></div>' +
             '<div><p class="hist-k">Last time</p><p class="hist-v num">' + esc(fmt.num(last.s.weight)) + '<small> lb × ' + esc(last.s.reps) + '</small></p></div>' +
           '</div>' +
-          (series.length > 1 ? sparkline(series.map((x) => x.e1), { color: 'var(--pink-fill)', width: 300, height: 56 }) : '') +
+          (series.length > 1 ? sparkline(series.map((x) => (byE1 ? x.e1 : x.s.weight)), { color: 'var(--pink-fill)', width: 300, height: 56 }) : '') +
           '<p class="card-sub">' + esc(fmt.plural(series.length, 'workout')) + ' logged</p>' +
         '</div>';
     }

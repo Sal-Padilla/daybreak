@@ -609,7 +609,8 @@ export const playerPage = {
       };
       await DB.put('sets', record);           // saved now — never batched
       await Store.reloadActiveSets();
-      if (i + 1 < item.sets) startRest(item.restSec || (await DB.getPref('rest:default', 90)) || 90, item.exerciseId);
+      // Her chosen rest (Profile) applies to every exercise; unset, the plan's rest for this one.
+      if (i + 1 < item.sets) startRest((await DB.getPref('rest:default', null)) || item.restSec || 90, item.exerciseId);
       else stopRest();
       return Nav.refresh();
     },

@@ -46,7 +46,7 @@ function classCard(slot, iso, ctx, ranked) {
   const booked = mine && (mine.bookedDates || []).includes(iso);
   let badge = '';
   if (r && r.warning) badge = '<span class="fit is-warn">' + icon('info', 13) + esc(shortReason(r.warning)) + '</span>';
-  else if (r && r.score > 0 && r.reason) badge = '<span class="fit">' + icon('sparkle', 13) + esc(shortReason(r.reason)) + '</span>';
+  else if (r && r.score > 0 && ringsHelped(r).length) badge = '<span class="fit">' + icon('sparkle', 13) + esc(ringsHelped(r).join(' · ')) + '</span>';
   return '<article class="ccard' + (mine ? ' is-mine' : '') + '">' +
     '<button type="button" class="ccard-main" data-action="nav-push" data-page="class" data-format="' + esc(f.id) + '">' +
       '<span class="ccard-art">' + classArt(f.id, { square: true, label: f.name }) + '</span>' +
@@ -65,6 +65,16 @@ function classCard(slot, iso, ctx, ranked) {
       : '<button type="button" class="ccard-add" data-action="class-add" data-format="' + esc(f.id) + '" data-dow="' + slot.dayOfWeek +
         '" data-time="' + esc(slot.start) + '" data-date="' + iso + '" aria-label="Add ' + esc(f.name) + ' to your week">' + icon('plus', 22) + '</button>') +
     '</article>';
+}
+
+/**
+ * rankClasses() lists what a class would help in `helps`: pillar short names, lowercased, and
+ * Shape Map muscles. The pillars are the four rings, so name them as the rings do; muscles have
+ * no ring and are left out.
+ */
+const RING_OF = { strength: 'resistive', control: 'control', cardio: 'cardio', shape: 'shape' };
+function ringsHelped(r) {
+  return [...new Set((r.helps || []).map((h) => PILLAR_LABEL[RING_OF[h]]).filter(Boolean))];
 }
 
 /** Recommendation reasons were written as full sentences; a badge wants the first clause. */

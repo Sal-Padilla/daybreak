@@ -92,7 +92,7 @@ export const profilePage = {
   async render() {
     const p = Store.get('profile') || {};
     const theme = await DB.getPref('theme', 'auto');
-    const rest = await DB.getPref('rest:default', 90);
+    const rest = await DB.getPref('rest:default', null);
     const demo = await isDemoData();
     const backupAt = await DB.getPref('backup:at', null);
     const height = p.heightIn ? Math.floor(p.heightIn / 12) + '′ ' + Math.round(p.heightIn % 12) + '″' : '';
@@ -116,12 +116,12 @@ export const profilePage = {
       ], { header: 'About you' }) +
 
       group([
-        { lead: tile('lock', 'var(--mint-fill)'), title: 'Pelvic floor', sub: 'A private question that tailors your exercises',
+        { lead: tile('lock', 'var(--mint-fill)'), title: 'Pelvic floor', sub: 'A private question',
           value: p.pelvicFloor && p.pelvicFloor !== 'unknown' ? labelOf(LEAK, p.pelvicFloor) : 'Not answered', action: 'edit-leak' },
       ], { header: 'Comfort & privacy', footer: 'Everything stays on this phone. Nothing is sent anywhere.' }) +
 
       group([
-        { lead: tile('timer', 'var(--orange-fill)'), title: 'Rest between sets', value: fmt.mmss(rest), action: 'edit-rest' },
+        { lead: tile('timer', 'var(--orange-fill)'), title: 'Rest between sets', value: rest ? fmt.mmss(rest) : 'As planned', action: 'edit-rest' },
       ], { header: 'Workouts' }) +
 
       group([
@@ -196,7 +196,7 @@ export const profilePage = {
     },
     async 'edit-leak'() {
       const v = await choose('Any leaking when you jump, cough, sneeze or lift?', LEAK, (Store.get('profile') || {}).pelvicFloor,
-        'It’s very common — around 4 in 10 women who lift — and very treatable. If it happens, I’ll swap jumps and heavy squats for moves that are kinder to your pelvic floor.');
+        'It’s very common — around 4 in 10 women who lift — and very treatable.');
       if (v) await saveProfile({ pelvicFloor: v }, 'Thanks — saved privately');
     },
     'edit-body'() {
@@ -227,10 +227,12 @@ export const profilePage = {
       });
     },
     async 'edit-rest'() {
-      const cur = await DB.getPref('rest:default', 90);
-      const v = await choose('Rest between sets', [60, 90, 120, 150, 180].map((s) => ({ id: String(s), label: fmt.mmss(s) +
-        (s === 90 ? ' — most exercises' : s === 150 ? ' — heavy lifts' : '') })), String(cur));
-      if (v) { await DB.setPref('rest:default', Number(v)); toast('Saved'); return Nav.refresh(); }
+      // Unset = each exercise's planned rest. A time here is used after every set, every exercise —
+      // before, the plan's rest always won and this setting changed nothing.
+      const cur = await DB.getPref('rest:default', null);
+      const v = await choose('Rest between sets', [{ id: 'plan', label: 'As planned', sub: 'Longer after heavy lifts, shorter after the rest' }]
+        .concat([60, 90, 120, 150, 180].map((s) => ({ id: String(s), label: fmt.mmss(s), sub: 'After every set' }))), cur ? String(cur) : 'plan');
+      if (v) { await DB.setPref('rest:default', v === 'plan' ? null : Number(v)); toast('Saved'); return Nav.refresh(); }
     },
     async 'edit-theme'() {
       const cur = await DB.getPref('theme', 'auto');

@@ -487,6 +487,17 @@ function recolor(s, eq) {
 }
 
 const cache = new Map();
+let copies = 0;
+
+/**
+ * Every copy put on the page gets its own gradient id. The cached markup repeated one id, and
+ * WebKit does not paint url(#id) when the first element with that id sits in a hidden tab.
+ */
+function ownIds(svg, ck) {
+  const gid = 'fg' + (hash(ck) % 1e7);
+  return svg.indexOf(gid) < 0 ? svg : svg.split('#' + gid + ')').join('#' + gid + '-' + (++copies) + ')')
+    .split('id="' + gid + '"').join('id="' + gid + '-' + copies + '"');
+}
 
 /**
  * The illustrated version of a stored diagram.
@@ -503,7 +514,7 @@ export function figureSvg(key, opts = {}) {
   const labels = opts.labels !== false;
   const bare = opts.panel === false;
   const ck = key + '|' + frame + '|' + labels + '|' + (opts.castKey || '') + '|' + bare;
-  if (cache.has(ck)) return cache.get(ck);
+  if (cache.has(ck)) return ownIds(cache.get(ck), ck);
 
   const cast = opts.cast || castFor(opts.castKey || key);
   const shapes = parse(d.svg);
@@ -575,7 +586,7 @@ export function figureSvg(key, opts = {}) {
     texts.map((s) => recolor(s, eq)).join('') +
     '</svg>';
   cache.set(ck, svg);
-  return svg;
+  return ownIds(svg, ck);
 }
 
 function escAttr(s) {
