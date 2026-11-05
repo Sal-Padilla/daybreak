@@ -376,7 +376,7 @@ export const reportPage = {
       (r.movers.length ? '<div class="card"><p class="card-title">' + icon('trophy', 18) + ' Getting stronger</p>' + r.movers.map((m) =>
         // "95 → 95 lb" reads like a bug: when the load held and the reps moved, say that.
         '<p class="mover"><b>' + esc(m.name) + '</b><span class="num">' + (m.toWeight === m.fromWeight
-          ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+          ? fmt.num(m.toWeight) + ' lb · ' + esc(m.fromReps) + ' → ' + esc(m.toReps) + ' reps'
           : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb') + '</span></p>').join('') + '</div>' : '') +
       (r.body ? '<div class="card"><p class="card-title">' + icon('ruler', 18) + ' Measurements</p>' +
         '<p class="mover"><b>Waist</b><span class="num">' + fmt.num(r.body.waistIn) + '"</span></p>' +

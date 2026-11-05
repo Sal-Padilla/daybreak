@@ -251,8 +251,10 @@ async function onClick(e) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json,.json';
+    input.style.display = 'none';
     input.onchange = async () => {
       const f = input.files && input.files[0];
+      input.remove();
       if (!f) return;
       try {
         await DB.importAll(JSON.parse(await f.text()));
@@ -260,6 +262,9 @@ async function onClick(e) {
         setTimeout(() => location.reload(), 700);
       } catch (_) { toast('That file isn’t a backup I can read', { tone: 'bad', ic: 'info' }); }
     };
+    // In the page while the picker is open, as pickPhoto does: on iPhone a detached file input
+    // can be thrown away before she picks, and then nothing happens.
+    document.body.appendChild(input);
     input.click();
   }
 }

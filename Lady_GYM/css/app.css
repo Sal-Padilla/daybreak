@@ -70,7 +70,8 @@ a { color: var(--brand); }
 .in-modal .page-scroll { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
 .page.is-player .page-scroll { padding-bottom: 0; }
 
-.page-body { padding: 0 var(--gutter); }
+/* Left/right safe areas are 0 in portrait; in landscape they keep content off the notch / Dynamic Island. */
+.page-body { padding: 0 calc(env(safe-area-inset-right, 0px) + var(--gutter)) 0 calc(env(safe-area-inset-left, 0px) + var(--gutter)); }
 
 /* ---------------------------------------------------------------- nav bar */
 
@@ -79,7 +80,7 @@ a { color: var(--brand); }
   padding-top: env(safe-area-inset-top, 0px);
   height: calc(env(safe-area-inset-top, 0px) + var(--nav-h));
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  padding-left: 8px; padding-right: 8px;
+  padding-left: calc(env(safe-area-inset-left, 0px) + 8px); padding-right: calc(env(safe-area-inset-right, 0px) + 8px);
   background: transparent;
   transition: background .2s var(--ease), box-shadow .2s var(--ease);
 }
@@ -119,7 +120,7 @@ a { color: var(--brand); }
 
 .large-head {
   display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
-  padding: 2px var(--gutter) 10px;
+  padding: 2px calc(env(safe-area-inset-right, 0px) + var(--gutter)) 10px calc(env(safe-area-inset-left, 0px) + var(--gutter));
 }
 .large-pre {
   font-size: var(--t-foot); font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
@@ -143,7 +144,7 @@ a { color: var(--brand); }
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
   display: flex;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   background: var(--bar);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
@@ -295,7 +296,7 @@ body.has-modal .tabbar, body.is-onboarding .tabbar { transform: translateY(110%)
   top: calc(env(safe-area-inset-top, 0px) + 8px);
   transform: translateY(-140%);
   display: flex; align-items: center; gap: 10px;
-  max-width: calc(100vw - 32px); padding: 10px 18px 10px 10px;
+  max-width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); padding: 10px 18px 10px 10px;
   border-radius: var(--r-pill); background: var(--card); color: var(--label);
   box-shadow: var(--shadow-float); font-size: var(--t-sub); font-weight: 600;
   opacity: 0; visibility: hidden;
@@ -320,7 +321,7 @@ body.has-modal .tabbar, body.is-onboarding .tabbar { transform: translateY(110%)
   display: flex; flex-direction: column;
   background: var(--bg); border-radius: 14px 14px 0 0;
   transform: translateY(105%); transition: transform .45s var(--spring);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   box-shadow: 0 -10px 40px rgba(0, 0, 0, .15);
 }
 .sheet.is-large { height: calc(100% - env(safe-area-inset-top, 0px) - 12px); }
@@ -365,7 +366,8 @@ body.has-modal .tabbar, body.is-onboarding .tabbar { transform: translateY(110%)
 
 /* action sheet */
 .asheet {
-  position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  position: absolute; left: calc(env(safe-area-inset-left, 0px) + 8px); right: calc(env(safe-area-inset-right, 0px) + 8px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
   transform: translateY(120%); transition: transform .4s var(--spring);
 }
 .asheet-layer.is-open .asheet { transform: translateY(0); }

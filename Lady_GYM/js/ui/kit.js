@@ -475,6 +475,8 @@ export function pickPhoto({ camera = false } = {}) {
       input.remove();
       resolve(f || null);
     });
+    // Closed without choosing (iOS 16.4+): settle, so the button that opened it is free again.
+    input.addEventListener('cancel', () => { input.remove(); resolve(null); });
     document.body.appendChild(input);
     input.click();
   });

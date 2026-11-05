@@ -282,8 +282,10 @@ export const profilePage = {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'application/json,.json';
+      input.style.display = 'none';
       input.onchange = async () => {
         const f = input.files && input.files[0];
+        input.remove();
         if (!f) return;
         const ok = await confirmAlert('Restore this backup?', 'It’s added to what’s already here.', { ok: 'Restore' });
         if (!ok) return;
@@ -293,6 +295,9 @@ export const profilePage = {
           setTimeout(() => location.reload(), 700);
         } catch (_) { toast('That file isn’t a backup I can read', { tone: 'bad', ic: 'info' }); }
       };
+      // In the page while the picker is open, as pickPhoto does: on iPhone a file input that is not
+      // in the document can be thrown away before she picks, and then nothing happens.
+      document.body.appendChild(input);
       input.click();
     },
     async 'load-demo'() {
