@@ -150,9 +150,15 @@ async function refreshTargets() {
   const dials = Store.get('dials') || {};
   const readiness = session && session.readiness ? readinessAdvice(readinessScore(session.readiness)) : null;
   for (const item of plan.items) {
+    // A rough morning drops the last set of each movement, as the check-in promises — once per
+    // item, and never below one set.
+    if (readiness && readiness.dropLastSet && !item.lastSetDropped && item.sets > 1) {
+      item.sets -= 1;
+      item.lastSetDropped = true;
+    }
     const history = await DB.getExerciseSets(item.exerciseId);
     const prior = (history || []).filter((s) => s.sessionId !== (session && session.id) && !s.isWarmup);
-    let t = nextTarget(prior, item.exercise, { ...dials, topSetReps: item.reps });
+    let t = nextTarget(prior, item.exercise, { ...dials, topSetReps: item.reps }, { reps: item.reps, sets: item.sets });
     if (readiness) t = adjustForReadiness(t, readiness);
     targets.set(item.exerciseId, t);
   }
@@ -228,7 +234,8 @@ function currentItem() {
 
 function startingWeights(ex) {
   const eq = ex.equipment || [];
-  if (eq.includes('barbell')) return [35, 45, 65, 75, 95];
+  // Nothing below the empty bar (45 lb), whichever bar: Olympic, trap bar or Smith machine.
+  if (eq.includes('barbell') || eq.includes('trapbar') || eq.includes('smith')) return [45, 55, 65, 75, 95];
   if (eq.includes('kettlebell')) return [10, 15, 20, 25, 35];
   if (eq.includes('dumbbell')) return [5, 8, 10, 12, 15, 20];
   if (eq.includes('machine') || eq.includes('cable')) return [20, 30, 40, 50, 60, 70];
@@ -760,7 +767,7 @@ function swapExercise() {
         const ex = byId(n.dataset.eid);
         if (!ex) return;
         const rep = itemFromExercise(ex);
-        rep.sets = item.sets; rep.reps = item.reps;
+        rep.sets = item.sets; rep.reps = item.reps; rep.lastSetDropped = item.lastSetDropped;
         plan.items[focus] = rep;
         drafts.delete(item.exerciseId);
         closeSheet();

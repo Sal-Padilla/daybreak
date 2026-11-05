@@ -4,7 +4,7 @@
  * BUILD_CONTRACT §5.2. Three exports, nothing else.
  *
  *   estimate1RM(weight, reps)              Epley, capped at 12 reps, null when it cannot be known.
- *   nextTarget(history, exercise, dials)   What to do on the next set of this movement.
+ *   nextTarget(history, exercise, dials, plan?)  What to do on the next set of this movement.
  *   adjustForReadiness(target, readiness)  Scale that target for how she actually woke up.
  *
  * DESIGN NOTES (the parts that are behaviour, not decoration)
@@ -165,11 +165,15 @@ function repValue(set, exercise) {
  * tier-3 accessory keeps its own defaultReps, because 5 reps of a cable abduction is not a thing.
  * A time-based movement ALWAYS keeps its own range — dials.topSetReps counts repetitions, and a
  * 60-second plank measured against an 8–12 "rep" range reads as permanently past the top.
+ * Today's plan range (`plan.reps`), when the caller has one, outranks both for counted reps: it
+ * is the range the screen shows, so the target and its message have to agree with it.
  */
-function repRangeFor(exercise, dials) {
+function repRangeFor(exercise, dials, plan) {
   const fromExercise = asRange(isObj(exercise) ? exercise.defaultReps : null);
   const fromDials = asRange(isObj(dials) ? dials.topSetReps : null);
+  const fromPlan = asRange(isObj(plan) ? plan.reps : null);
   if (!countsReps(exercise) && fromExercise) return fromExercise;
+  if (fromPlan) return fromPlan;
   if (tierOf(exercise) === 3 && fromExercise) return fromExercise;
   return fromDials || fromExercise || DEFAULT_REP_RANGE.slice();
 }
@@ -342,13 +346,15 @@ export function estimate1RM(weight, reps) {
  * @param {Array}  history  prior sets for THIS exercise, newest last. Warm-ups are ignored.
  * @param {Object} exercise an EXERCISES entry (may be null — the target degrades, it does not throw)
  * @param {Object} dials    dialsFor(profile) — topSetReps and rirTarget are read
+ * @param {Object} [plan]   today's prescription, when there is one: { reps:[lo,hi], sets }. The
+ *                          range and set count the screen shows, so the message matches them.
  * @returns {{weight:number|null, reps:number, sets:number, rir:number, reason:string,
  *            message:string, exerciseId:string|null, track:string, repRange:number[],
  *            increment:number, roundTo:number, dropLastSet:boolean, swapTo:string|null,
  *            lastWeight:number|null, lastReps:number|null}}
  */
-export function nextTarget(history, exercise, dials) {
-  const range = repRangeFor(exercise, dials);
+export function nextTarget(history, exercise, dials, plan) {
+  const range = repRangeFor(exercise, dials, plan);
   const lo = range[0];
   const hi = range[1];
   const track = trackOf(exercise);
@@ -358,6 +364,9 @@ export function nextTarget(history, exercise, dials) {
   const loadable = isLoadable(exercise);
   const exerciseId = isObj(exercise) && typeof exercise.id === 'string' ? exercise.id : null;
   const unit = unitWordFor(exercise);
+  // Today's set count when the plan gives one (a rough morning drops a set), else last time's.
+  const planSets = num(isObj(plan) ? plan.sets : null);
+  const setsFrom = (fallback) => Math.min(MAX_SETS, Math.max(1, Math.round(planSets !== null ? planSets : fallback)));
 
   const base = {
     exerciseId,
@@ -380,29 +389,35 @@ export function nextTarget(history, exercise, dials) {
       ...base,
       weight: null,
       reps: lo,
-      sets: DEFAULT_SETS,
+      sets: setsFrom(DEFAULT_SETS),
       rir: rirFor(dials, true),
       reason: 'first-time',
-      message: 'First time — pick a weight you could do about 12 times and stop 4 short.',
+      // Only a weighted lift has a weight to pick; a plank, a jump or a bike ride has none.
+      message: track === 'weight_reps'
+        ? 'First time — pick a weight you could do about 12 times and stop 4 short.'
+        : '',
     };
   }
 
   const lastWeight = last.topWeight;
   const lastReps = last.minReps !== null ? last.minReps : last.maxReps;
-  const sets = Math.min(MAX_SETS, Math.max(1, last.setCount));
+  const sets = setsFrom(last.setCount);
   const carried = { ...base, lastWeight, lastReps };
 
   /* --- Earned the load ----------------------------------------------------- */
   if (hitTopOnEverySet(last, hi)) {
     const canAddLoad = loadable && lastWeight !== null && lastWeight > 0;
-    const weight = canAddLoad ? round1(lastWeight + increment) : lastWeight;
+    // Land on a weight that exists: the equipment's grid (the increment's, where that is finer),
+    // never below the last weight and never more than one increment up. 8 lb + 2.5 is 10, not 10.5.
+    const grid = Math.min(roundTo, increment);
+    const weight = canAddLoad ? round1(Math.floor((lastWeight + increment) / grid + 1e-9) * grid) : lastWeight;
     // Reps only reset when the load actually went up; otherwise resetting would be a step back.
     const reps = canAddLoad ? lo : hi;
 
     let message;
     if (canAddLoad) {
       message =
-        `Every set hit ${fmtNum(hi)} ${unit} last time. Up ${fmtNum(increment)} lb to ` +
+        `Every set hit ${fmtNum(hi)} ${unit} last time. Up ${fmtNum(weight - lastWeight)} lb to ` +
         `${fmtNum(weight)} lb, back down to ${fmtNum(lo)} ${unit}.`;
     } else if (track === 'weight_reps') {
       // Loaded movement, but the weight never got written down — ask once, without scolding.
@@ -458,15 +473,18 @@ export function nextTarget(history, exercise, dials) {
   const reps =
     lastReps !== null ? Math.min(hi, Math.max(1, lastReps + step)) : lo;
 
+  // One set is one set: "on every set" and "all 1 sets reach" only read right from two up.
+  const onEvery = sets > 1 ? ' on every set' : '';
+  const whenAll = sets > 1 ? `all ${sets} sets reach` : 'you reach';
   let message;
   if (lastWeight !== null && lastWeight > 0) {
     message =
-      `Hold ${fmtNum(lastWeight)} lb and go for ${fmtNum(reps)} ${unit} on every set. ` +
-      `Load moves when all ${sets} sets reach ${fmtNum(hi)}.`;
+      `Hold ${fmtNum(lastWeight)} lb and go for ${fmtNum(reps)} ${unit}${onEvery}. ` +
+      `Load moves when ${whenAll} ${fmtNum(hi)}.`;
   } else {
     message =
-      `Same setup, ${fmtNum(reps)} ${unit} on every set. ` +
-      `It gets harder when all ${sets} sets reach ${fmtNum(hi)}.`;
+      `Same setup, ${fmtNum(reps)} ${unit}${onEvery}. ` +
+      `It gets harder when ${whenAll} ${fmtNum(hi)}.`;
   }
 
   return {

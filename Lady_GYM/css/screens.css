@@ -306,7 +306,9 @@
 .pl-row .btn { flex: 1; }
 
 .pl-progress { display: flex; gap: 4px; margin: 2px 0 12px; }
-.seg-bar { flex: 1; height: 6px; border-radius: 3px; border: 0; padding: 0; background: var(--fill-2); }
+.seg-bar { position: relative; flex: 1; height: 6px; border-radius: 3px; border: 0; padding: 0; background: var(--fill-2); }
+/* the only way back to an earlier exercise: a 6px bar is too thin to hit, so the tap area is taller than the bar */
+.seg-bar::after { content: ''; position: absolute; left: -2px; right: -2px; top: -10px; bottom: -12px; }
 .seg-bar.is-part { background: linear-gradient(90deg, var(--brand-fill) 50%, var(--fill-2) 50%); }
 .seg-bar.is-full { background: var(--mint-fill); }
 .seg-bar.is-on { outline: 2px solid var(--brand-fill); outline-offset: 2px; }
