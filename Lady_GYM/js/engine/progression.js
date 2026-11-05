@@ -416,8 +416,12 @@ export function nextTarget(history, exercise, dials, plan) {
     const canAddLoad = loadable && lastWeight !== null && lastWeight > 0;
     // Land on a weight that exists: the equipment's grid (the increment's, where that is finer),
     // never below the last weight and never more than one increment up. 8 lb + 2.5 is 10, not 10.5.
+    // A step that rounds down to almost nothing is no step (12 lb + 2.5 would give 12.5): then the
+    // next weight up, which on a 5-8-10-12-15 dumbbell rack is 15.
     const grid = Math.min(roundTo, increment);
-    const weight = canAddLoad ? round1(Math.floor((lastWeight + increment) / grid + 1e-9) * grid) : lastWeight;
+    const down = round1(Math.floor((lastWeight + increment) / grid + 1e-9) * grid);
+    const up = round1(Math.ceil((lastWeight + increment) / grid - 1e-9) * grid);
+    const weight = canAddLoad ? (down - lastWeight >= increment / 2 ? down : up) : lastWeight;
     // Reps only reset when the load actually went up; otherwise resetting would be a step back.
     const reps = canAddLoad ? lo : hi;
 

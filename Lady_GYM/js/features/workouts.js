@@ -36,7 +36,7 @@ function schemeLabel(item, dropLastSet) {
   const sets = dropLastSet && item.sets > 1 ? item.sets - 1 : item.sets;
   if (ex.track === 'time_hold') return sets + ' × hold';
   if (ex.track === 'time_distance') return sets > 1 ? sets + ' rounds' : 'Steady';
-  return sets + ' × ' + item.reps[0] + '–' + item.reps[1];
+  return sets + ' × ' + (item.reps[0] === item.reps[1] ? item.reps[0] : item.reps[0] + '–' + item.reps[1]);
 }
 
 function areaChips(ex) {

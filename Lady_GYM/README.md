@@ -9,7 +9,8 @@ they said, what they meant, and what changed, with measurements and before/after
 **To send to people:** https://sal-padilla.github.io/daybreak/ladygym. The ready-to-send
 invite text is in [docs/INVITE.md](docs/INVITE.md).
 **The app itself:** https://sal-padilla.github.io/daybreak/Lady_GYM/
-*(Both go live once this is merged into `main` and GitHub Pages has published.)*
+*(Live from `main`. After a push, GitHub Pages takes a few minutes to publish.)* What the
+November 2026 review found and fixed: [docs/REVIEW_2026-11-05.md](docs/REVIEW_2026-11-05.md).
 
 | | | |
 |---|---|---|
@@ -102,8 +103,9 @@ tools/    check.mjs · make-icons.mjs
 docs/     REVIEW_OF_DAYBREAK.md · APP_STORE.md · screens/
 ```
 
-**Reused from Daybreak without changes:** the whole training engine (`engine/`, `data/`,
-`core/db` and `core/store`). The research behind it is in the root
-[PROJECT_PLAN.md](../PROJECT_PLAN.md). **New:** everything she sees.
+**Built on Daybreak's training engine** (`engine/`, `data/`, `core/store`), with the fixes from
+the November review; `core/db` is Lady_GYM's own database (`LadyGymDB`, with a photos store).
+The research behind the engine is in the root [PROJECT_PLAN.md](../PROJECT_PLAN.md).
+**New:** everything she sees.
 
 Lady_GYM gives general fitness guidance. It is not medical advice.

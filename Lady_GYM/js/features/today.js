@@ -200,6 +200,12 @@ async function proteinCard(profile) {
     return '<div class="card mini">' + head + '<p class="mini-yes">' + icon('check', 18) + ' Nice — goal hit!</p>' +
       '<button type="button" class="link" data-action="protein" data-v="">Undo</button></div>';
   }
+  // "Not Today" is saved (the weekly report counts it); without its own state the card looked
+  // untouched, as if the button had done nothing.
+  if (v === false) {
+    return '<div class="card mini">' + head + '<p class="card-sub">Noted — tomorrow’s a new day.</p>' +
+      '<button type="button" class="link" data-action="protein" data-v="">Undo</button></div>';
+  }
   return '<div class="card mini">' + head + '<div class="mini-actions">' +
     button({ label: 'I Hit It', action: 'protein', kind: 'tinted', size: 'md', data: { v: '1' }, full: false }) +
     button({ label: 'Not Today', action: 'protein', kind: 'plain', size: 'md', data: { v: '0' }, full: false }) +

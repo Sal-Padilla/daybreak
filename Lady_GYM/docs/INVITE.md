@@ -5,8 +5,8 @@ straight in Safari, which can install the app. Instagram, Facebook and WhatsApp 
 their own built-in browser instead, which adds an extra step. The install page handles that
 case, but a text message avoids it.
 
-The link only works once the pull request is merged into `main` and GitHub Pages has finished
-publishing, usually within a few minutes.
+The link is live. After an update is pushed to `main`, GitHub Pages takes a few minutes to
+publish it.
 
 ---
 

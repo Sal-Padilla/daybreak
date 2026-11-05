@@ -83,6 +83,10 @@ async function openNow(opts) {
     view = 'active';
     plan = await resolvePlanForSession(profile, active);
     await refreshTargets();
+    // Back where she left off — the first movement with sets still to do — not always the first.
+    const logged = (Store.get('activeSets') || []).filter((s) => !s.isWarmup);
+    const next = plan.items.findIndex((it) => logged.filter((s) => s.exerciseId === it.exerciseId).length < it.sets);
+    focus = next >= 0 ? next : Math.max(0, plan.items.length - 1);
     return Nav.present(playerPage, {});
   }
   if (opts.empty) {
@@ -240,7 +244,8 @@ function emptyBar(ex) {
 
 function startingWeights(ex) {
   const eq = ex.equipment || [];
-  if (emptyBar(ex)) return [45, 55, 65, 75, 95];
+  // 35 first: the women's bar most clubs keep next to the 45. Picking it lowers the ± floor too.
+  if (emptyBar(ex)) return [35, 45, 55, 65, 75, 95];
   if (eq.includes('kettlebell')) return [10, 15, 20, 25, 35];
   if (eq.includes('dumbbell')) return [5, 8, 10, 12, 15, 20];
   if (eq.includes('machine') || eq.includes('cable')) return [20, 30, 40, 50, 60, 70];
@@ -339,9 +344,10 @@ function targetLine(item) {
   const t = targets.get(item.exerciseId);
   const ex = item.exercise;
   const parts = [];
-  if (ex.track === 'time_hold') parts.push(item.sets + ' holds');
+  if (ex.track === 'time_hold') parts.push(fmt.plural(item.sets, 'hold'));
   else if (ex.track === 'time_distance') parts.push(item.sets > 1 ? item.sets + ' rounds' : 'Steady pace');
-  else parts.push(item.sets + ' sets × ' + item.reps[0] + '–' + item.reps[1] + ' reps');
+  // A fixed count reads "5 reps", not "5–5 reps".
+  else parts.push(fmt.plural(item.sets, 'set') + ' × ' + (item.reps[0] === item.reps[1] ? item.reps[0] : item.reps[0] + '–' + item.reps[1]) + ' reps');
   if (t && t.weight != null && ex.track === 'weight_reps') parts.push('aim ' + fmt.num(t.weight) + ' lb');
   return parts.join(' · ');
 }
