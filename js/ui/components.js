@@ -731,9 +731,11 @@ export function confirmDialog(question, opts = {}) {
       btn({ label: cancelLabel, action: 'confirm-no', variant: 'ghost', size: 'lg', full: true }) +
       '</div>';
 
+    // The second tap of a double tap on the button that opened this must not confirm it unseen.
+    const openedAt = Date.now();
     sheet(title, body, {
       actions: {
-        'confirm-yes': () => { settle(true); closeSheet(); },
+        'confirm-yes': () => { if (Date.now() - openedAt < 400) return; settle(true); closeSheet(); },
         'confirm-no': () => { settle(false); closeSheet(); }
       },
       onClose: () => settle(false)

@@ -295,9 +295,12 @@ export function confirmAlert(title, message = '', { ok = 'OK', cancel = 'Cancel'
         '</div></div>';
     document.body.appendChild(layer);
     requestAnimationFrame(() => layer.classList.add('is-open'));
+    // The second tap of a double tap on the button that opened this must not answer it unseen
+    // ("Delete this photo?" → Delete). No one reads an alert and answers it inside 400 ms.
+    const openedAt = Date.now();
     layer.addEventListener('click', (e) => {
       const b = e.target.closest('[data-v]');
-      if (!b) return;
+      if (!b || Date.now() - openedAt < 400) return;
       layer.classList.remove('is-open');
       setTimeout(() => layer.remove(), 220);
       resolve(b.dataset.v === '1');

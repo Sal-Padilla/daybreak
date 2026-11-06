@@ -7,7 +7,7 @@
 //
 // Keep CACHE in step with js/version.js — tools/check.mjs fails the build if they drift.
 
-const CACHE = 'lady-gym-1.0.0';
+const CACHE = 'lady-gym-1.0.1';
 
 const ASSETS = [
   './',

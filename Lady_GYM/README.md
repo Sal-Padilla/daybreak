@@ -1,4 +1,4 @@
-# Lady_GYM — v1.0.0
+# Lady_GYM — v1.0.1
 
 **Workouts made for women, planned around your club classes, with a picture for every move.**
 
