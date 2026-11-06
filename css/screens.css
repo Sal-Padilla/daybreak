@@ -84,6 +84,10 @@
 /* ============================================================= onboarding */
 
 body.is-onboarding .bottom-nav { display: none; }
+/* With the nav gone, so is the room kept for it. The pinned footer below sticks to the scroller's
+   padding edge, so the nav's padding left Continue floating mid-screen with the options sliding
+   underneath it — the larger the text, the less of the question was left to see. */
+body.is-onboarding .app-content { padding-bottom: 0; }
 
 .onboarding {
   display: flex;
@@ -1007,10 +1011,23 @@ button.shape-row:active { background: var(--surface-2); }
   bottom: 0;
   z-index: 4;
   margin: 0 calc(var(--sp-4) * -1) calc(var(--sp-4) * -1);
-  padding: var(--sp-3) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom));
+  /* The negative margins reach the card's edges so nothing shows past the pinned row. The
+     global max-width:100% guard undid that: the row stayed content-width, shifted 16px left,
+     and the Swap button and the picture showed through a 32px strip on its right. */
+  max-width: none;
+  /* No home-indicator inset here: the row pins above the nav, which already carries it. With
+     it the "one 64px line" was 119px tall on a Face ID iPhone, 34px of it empty. */
+  padding: var(--sp-3) var(--sp-4);
   background: var(--surface);
   box-shadow: 0 -14px 18px -10px var(--surface), 0 -1px 0 var(--border);
   border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+/* Under 360px the card's padding is 12px (components.css), so the row reaches out 12px. */
+@media (max-width: 359px) {
+  .train.is-active .set-row {
+    margin: 0 calc(var(--sp-3) * -1) calc(var(--sp-3) * -1);
+    padding-inline: var(--sp-3);
+  }
 }
 
 /* The set row must survive a narrow screen with the system font turned up.
@@ -1025,8 +1042,11 @@ button.shape-row:active { background: var(--surface-2); }
   gap: var(--sp-2);
   grid-template-columns: none;
 }
+/* Two fields share a line only where each input can still show a weight like 112.5 between
+   its two 44px buttons. At 118px they shared it on a 390px iPhone and the weight box was 44px
+   wide: 165 lb read as "1". In rem, so it widens with the text. */
 .set-row .set-field {
-  flex: 1 1 118px;
+  flex: 1 1 10.5rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -1067,6 +1087,10 @@ button.shape-row:active { background: var(--surface-2); }
 .exercise-head > div:first-child { flex: 1 1 140px; min-width: 0; }
 .exercise-name { overflow-wrap: anywhere; }
 .exercise-actions { flex: 0 0 auto; margin-left: auto; }
+/* base.css's min-width: min(56px, 100%) counts as 0 when this box sizes itself to its content,
+   then makes the 30px "i" 56px once laid out — so Swap hung 26px past the box, over the card's
+   edge, and off the screen on a 320px phone. A plain length is counted both times. */
+.exercise-actions .info-btn { min-width: var(--tap); }
 .exercise-swap {
   flex: 0 0 auto;
   min-height: 40px;
@@ -1169,9 +1193,9 @@ button.shape-row:active { background: var(--surface-2); }
   font-size: var(--fs-h2);
   font-weight: 600;
   line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Wraps rather than ellipsises: on a 320px screen (or with larger text) the bar is narrower
+     still, and "165 lb × …" hid the reps again. A second line costs less than a lost number. */
+  white-space: normal;
   max-width: 100%;
 }
 .set-bar-x { color: var(--text-dim); font-weight: 400; }
@@ -1419,7 +1443,7 @@ button.shape-row:active { background: var(--surface-2); }
   bottom: 0;
   background: var(--bg);
   padding-top: var(--sp-2);
-  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+  padding-bottom: var(--sp-3);   /* pinned above the nav, which already clears the home indicator */
   box-shadow: 0 -14px 18px -10px var(--bg);
 }
 .warmup-stage { min-height: 0; }

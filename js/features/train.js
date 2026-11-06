@@ -44,7 +44,9 @@ let restingFor = null;
 let warmupTeardown = null;
 let lastSummary = null;
 let elapsedTicker = null;
-let restDefault = 90;        // her setting from Me; the programme item overrides it per exercise
+// Her rest setting from Me, used after every set when she has chosen one; unset (null), each
+// exercise rests as planned. The plan always won before, so the setting changed nothing.
+let restDefault = null;
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
@@ -75,7 +77,8 @@ async function todaysScheduledSession(profile, dials) {
   const today = DB.todayISO();
   const classes = await DB.getAll('classes');
   const wkStart = mondayOf(today);
-  const week = buildWeek(profile, classesForWeek(classes || [], wkStart), dials, wkStart);
+  const overrides = (await DB.getPref('session:overrides', {})) || {};   // "Move it", as on Week
+  const week = buildWeek(profile, classesForWeek(classes || [], wkStart), dials, wkStart, { overrides });
   const day = week.find((d) => d.date === today);
   return day && day.session ? day.session : null;
 }
@@ -224,14 +227,14 @@ function draftSummary(item) {
   const track = item.exercise.track;
   if (track === 'weight_reps') {
     return (d.weight == null ? '—' : fmt.num(d.weight) + ' lb') +
-      ' <span class="set-bar-x">×</span> ' + (d.reps == null ? '—' : d.reps);
+      ' <span class="set-bar-x">×</span> ' + (d.reps == null ? '—' : esc(d.reps));
   }
-  if (track === 'time_hold') return (d.seconds == null ? '—' : d.seconds + ' sec');
+  if (track === 'time_hold') return (d.seconds == null ? '—' : esc(d.seconds) + ' sec');
   if (track === 'time_distance') {
     return (d.seconds ? Math.round(d.seconds / 60) + ' min' : '—') +
       (d.distance ? ' · ' + fmt.num(d.distance) + ' mi' : '');
   }
-  return (d.reps == null ? '—' : d.reps + ' reps');
+  return (d.reps == null ? '—' : esc(d.reps) + ' reps');
 }
 
 function inputRow(item) {
@@ -423,7 +426,8 @@ function idleView(session, resolved) {
   const list = resolved.items.map((it) => (
     '<li class="plan-item">' +
       '<span class="plan-name">' + esc(it.exercise.name) + '</span>' +
-      '<span class="plan-scheme num">' + it.sets + ' × ' + it.reps[0] + '–' + it.reps[1] + '</span>' +
+      // The same line as the exercise card: "5 × 5", not "5 × 5–5"; a walk is one session, not "1 × 30–60".
+      '<span class="plan-scheme num">' + esc(setsAndRepsLabel(it)) + '</span>' +
       infoButton('exercise', it.exercise.id, it.exercise.name) +
     '</li>'
   )).join('');
@@ -500,7 +504,7 @@ function doneView() {
 
   const prs = s.prs.length
     ? '<ul class="pr-list">' + s.prs.map((p) =>
-        '<li><strong>' + esc(p.name) + '</strong> — ' + esc(fmt.lb(p.weight)) + ' × ' + p.reps + '</li>').join('') + '</ul>'
+        '<li><strong>' + esc(p.name) + '</strong> — ' + esc(fmt.lb(p.weight)) + ' × ' + esc(p.reps) + '</li>').join('') + '</ul>'
     : '';
 
   return '<div class="train">' + card({
@@ -527,11 +531,13 @@ export async function render(el) {
   if (!profile || !profile.name) { el.innerHTML = ''; return; }
 
   if (elapsedTicker) { clearInterval(elapsedTicker); elapsedTicker = null; }
-  restDefault = (await DB.getPref('rest:default', 90)) || 90;
+  restDefault = (await DB.getPref('rest:default', null)) || null;
 
   const session = Store.get('activeSession');
   const open = session && !session.complete;
 
+  // Yesterday's "Done." is not today's screen: the next morning it hid the Start button.
+  if (view === 'done' && lastSummary && lastSummary.date !== DB.todayISO()) { view = 'idle'; lastSummary = null; }
   if (view === 'done') { el.innerHTML = doneView(); return; }
 
   if (view === 'warmup') {
@@ -544,8 +550,16 @@ export async function render(el) {
 
   if (open) {
     view = 'active';
+    const resumed = !plan;
     if (!plan) plan = await resolvePlanForSession(profile, session);
     await refreshTargets(dials);
+    if (resumed) {
+      // Reopened after the app was closed: back where she left off — the first movement with
+      // sets still to do — not always the first.
+      const logged = (Store.get('activeSets') || []).filter((s) => !s.isWarmup);
+      const next = plan.items.findIndex((it) => logged.filter((s) => s.exerciseId === it.exerciseId).length < it.sets);
+      focusIndex = next >= 0 ? next : Math.max(0, plan.items.length - 1);
+    }
     el.innerHTML = activeView(session);
 
     elapsedTicker = setInterval(() => {
@@ -690,7 +704,8 @@ export const actions = {
   'go-today': () => { view = 'idle'; lastSummary = null; return Router.go('today'); },
   'go-shape': () => { view = 'idle'; lastSummary = null; return Router.go('shape'); },
 
-  'start-warmup'() { view = 'warmup'; return Router.refresh(); },
+  // A new view starts at its top: Router.go redraws without keeping the scroll that a refresh keeps.
+  'start-warmup'() { view = 'warmup'; return Router.go('train'); },
 
   async 'start-session'() {
     const profile = Store.get('profile');
@@ -800,8 +815,9 @@ export const actions = {
   'distance-down': () => bump('distance', -1),
   'distance-set': (n) => setField('distance', n.value),
 
-  'rest-less'() { if (timer) { timer.add(-15); timerLeft = Math.max(0, timerLeft - 15); paintTimer(); } },
-  'rest-more'() { if (timer) { timer.add(15); timerLeft += 15; paintTimer(); } },
+  // add() reports the new time through onTick straight away; adding 15 here as well showed +30.
+  'rest-less'() { if (timer) { timer.add(-15); paintTimer(); } },
+  'rest-more'() { if (timer) { timer.add(15); paintTimer(); } },
   'rest-skip'() { stopRest(); return Router.refresh(); },
 
   async 'log-set'() {
@@ -839,7 +855,7 @@ export const actions = {
     await Store.reloadActiveSets();
 
     if (navigator.vibrate) { try { navigator.vibrate(30); } catch (_) { /* unsupported */ } }
-    startRest(item.restSec || restDefault, item.exerciseId);
+    startRest(restDefault || item.restSec || 90, item.exerciseId);
 
     // Last planned set of this exercise → ask for effort, once.
     if (existing.length + 1 >= item.sets) askEffort(item);
@@ -853,17 +869,17 @@ export const actions = {
     if (!record) return;
     const ex = byId(record.exerciseId);
     const body =
-      '<p class="lede">' + esc(ex ? ex.name : 'Set') + ' · set ' + record.setNumber + '</p>' +
+      '<p class="lede">' + esc(ex ? ex.name : 'Set') + ' · set ' + esc(record.setNumber) + '</p>' +
       '<div class="sheet-fields">' +
         (record.weight != null
           ? '<div class="field"><label class="field-label" for="e-w">Weight (lb)</label>' +
-            '<input class="input num" id="e-w" type="number" inputmode="decimal" value="' + record.weight + '"></div>' : '') +
+            '<input class="input num" id="e-w" type="number" inputmode="decimal" value="' + esc(record.weight) + '"></div>' : '') +
         (record.reps != null
           ? '<div class="field"><label class="field-label" for="e-r">Reps</label>' +
-            '<input class="input num" id="e-r" type="number" inputmode="numeric" value="' + record.reps + '"></div>' : '') +
+            '<input class="input num" id="e-r" type="number" inputmode="numeric" value="' + esc(record.reps) + '"></div>' : '') +
         (record.seconds != null
           ? '<div class="field"><label class="field-label" for="e-s">Seconds</label>' +
-            '<input class="input num" id="e-s" type="number" inputmode="numeric" value="' + record.seconds + '"></div>' : '') +
+            '<input class="input num" id="e-s" type="number" inputmode="numeric" value="' + esc(record.seconds) + '"></div>' : '') +
       '</div>' +
       btn({ label: 'Save', action: 'save-set', variant: 'primary', size: 'lg', full: true }) +
       btn({ label: 'Delete this set', action: 'delete-set', variant: 'danger', size: 'md', full: true });
@@ -874,9 +890,13 @@ export const actions = {
           const w = document.getElementById('e-w');
           const r = document.getElementById('e-r');
           const s = document.getElementById('e-s');
-          if (w) record.weight = parseFloat(w.value);
-          if (r) record.reps = parseInt(r.value, 10);
-          if (s) record.seconds = parseInt(s.value, 10);
+          // A field left empty keeps its number; it used to save NaN ("— lb × 8").
+          const wv = w ? parseFloat(w.value) : NaN;
+          const rv = r ? parseInt(r.value, 10) : NaN;
+          const sv = s ? parseInt(s.value, 10) : NaN;
+          if (Number.isFinite(wv)) record.weight = wv;
+          if (Number.isFinite(rv)) record.reps = rv;
+          if (Number.isFinite(sv)) record.seconds = sv;
           await DB.put('sets', record);
           await Store.reloadActiveSets();
           closeSheet();
@@ -974,13 +994,14 @@ export const actions = {
     await DB.put('sessions', session);
 
     lastSummary = await buildSummary(session, sets);
+    lastSummary.date = DB.todayISO();
 
     Store.set('activeSession', null);
     Store.set('activeSets', []);
     stopRest();
     plan = null; drafts.clear(); targets.clear(); focusIndex = 0;
     view = 'done';
-    return Router.refresh();
+    return Router.go('train');     // the summary from its top, not wherever the session was scrolled
   },
 };
 
@@ -1029,7 +1050,7 @@ async function createSession(profile, scheduled) {
     const advice = readinessAdvice(readinessScore(readiness));
     if (advice.band !== 'good') toast(advice.message, advice.band === 'poor' ? 'signal' : 'accent');
   }
-  return Router.refresh();
+  return Router.go('train');       // the session from its top, with the exercise name in view
 }
 
 function askEffort(item) {

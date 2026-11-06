@@ -71,7 +71,7 @@ export async function render(el) {
 
   const program = PROGRAMS[profile.programId] || programFor(profile);
   const theme = (await DB.getPref('theme', 'auto')) || 'auto';
-  const restDefault = (await DB.getPref('rest:default', 90)) || 90;
+  const restDefault = (await DB.getPref('rest:default', null)) || null;   // null: as planned
   const lastBackup = await DB.getPref('backup:at', null);
   const demo = await isDemoData();
 
@@ -134,7 +134,7 @@ export async function render(el) {
             row('Working effort', 'Leave ' + dials.rirTarget[0] + '–' + dials.rirTarget[1] + ' reps in the tank') +
             row('Sets per primary target', String(dials.weeklySetsPerPrimary) + ' a week') +
             row('Warm-up', dials.warmupMinutes + ' min') +
-            row('Rest timer', restDefault + ' sec', 'edit-rest') +
+            row('Rest timer', restDefault ? restDefault + ' sec' : 'As planned', 'edit-rest') +
           '</div>',
       }) +
 
@@ -329,7 +329,7 @@ export const actions = {
           '<span class="ob-unit">in</span></div></div>' +
         '<div class="field"><label class="field-label" for="p-wt">Weight (lb)</label>' +
           '<input class="input num" id="p-wt" type="number" inputmode="decimal" step="0.5" value="' +
-            (profile.weightLb || '') + '"></div>' +
+            esc(profile.weightLb || '') + '"></div>' +
       '</div>' +
       btn({ label: 'Save', action: 'save-body', variant: 'primary', size: 'lg', full: true }),
       {
@@ -356,11 +356,14 @@ export const actions = {
   },
 
   async 'edit-rest'() {
-    const current = (await DB.getPref('rest:default', 90)) || 90;
+    // Unset = each exercise's planned rest. A time here is used after every set, every exercise —
+    // before, the plan's rest always won and this setting changed nothing.
+    const current = (await DB.getPref('rest:default', null)) || null;
     pickerSheet('Default rest',
-      [60, 90, 120, 150, 180].map((n) => ({ id: String(n), label: n + ' seconds' })),
-      String(current),
-      async (v) => { await DB.setPref('rest:default', parseInt(v, 10)); });
+      [{ id: 'plan', label: 'As planned', note: 'Longer after heavy lifts, shorter after the rest' }]
+        .concat([60, 90, 120, 150, 180].map((n) => ({ id: String(n), label: n + ' seconds', note: 'After every set' }))),
+      current ? String(current) : 'plan',
+      async (v) => { await DB.setPref('rest:default', v === 'plan' ? null : parseInt(v, 10)); });
   },
 
   async 'set-theme'(node) {
@@ -433,7 +436,8 @@ export const actions = {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      // Kept a minute: iPhone asks "Download?" first, and the file must still be there when she taps it.
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
       await DB.setPref('backup:at', new Date().toISOString());
       toast('Backup saved. Keep it somewhere safe.', 'calm');
       return Router.refresh();

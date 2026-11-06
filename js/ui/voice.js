@@ -217,6 +217,8 @@ export function listen(opts = {}) {
 
   rec.onerror = (e) => {
     const code = e && e.error;
+    // She tapped the mic again to stop it. Not a failure — it used to say "Could not listen".
+    if (code === 'aborted') { finish('idle'); return; }
     const message = code === 'not-allowed' || code === 'service-not-allowed'
       ? 'Microphone blocked. Allow it in the browser site settings.'
       : code === 'no-speech'

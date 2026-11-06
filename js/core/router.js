@@ -38,6 +38,7 @@ let order = [];               // tab ids in nav order
 let activeId = null;
 let wired = false;
 let renderSeq = 0;
+let drawnSeq = 0;             // the newest render that has finished drawing
 let navigating = false;
 
 /** Router-owned actions, checked before the active feature's map. */
@@ -105,9 +106,23 @@ function dispatch(name, node, event) {
     return;
   }
   if (result && typeof result.then === 'function') {
-    result.catch((err) => console.error(`Daybreak Router: action "${name}" rejected.`, err));
+    return result.catch((err) => console.error(`Daybreak Router: action "${name}" rejected.`, err));
   }
+  return result;
 }
+
+// One tap, one action. A double tap ran a button's action twice while the first run was still
+// saving: two sessions from one "Start", a set logged twice. A tap on a button whose action is
+// still running is ignored. The re-render that ends most actions replaces the button anyway; the
+// cap is for an action that never settles, so its button cannot go dead.
+const busy = new WeakMap();      // node -> when its still-running action started
+
+// A save is quick, though, and its re-render puts an identical button under the same finger:
+// inside one double tap the second tap logged the set again on the new button (measured: two
+// sets from taps 60 and 120 ms apart). So the same action on the same thing again within 400 ms
+// is a double tap too. Steppers and the paging arrows are made to be tapped fast; not those.
+const REPEATABLE = /-(up|down|more|less)$|^(prev|next)-(week|month)$/;
+let lastTap = { key: '', at: 0 };
 
 function onClick(event) {
   const start = event.target && event.target.nodeType === 1 ? event.target : event.target?.parentElement;
@@ -117,7 +132,16 @@ function onClick(event) {
   if (node.disabled || node.getAttribute('aria-disabled') === 'true') return;
   // Form controls are served by change/input so they cannot fire twice.
   if (isFormControl(node)) return;
-  dispatch(node.getAttribute('data-action'), node, event);
+  const started = busy.get(node);
+  if (started && Date.now() - started < 3000) return;
+  const name = node.getAttribute('data-action');
+  const key = name + JSON.stringify(node.dataset);
+  if (!REPEATABLE.test(name) && key === lastTap.key && Date.now() - lastTap.at < 400) return;
+  lastTap = { key, at: Date.now() };
+  const t = Date.now();
+  busy.set(node, t);
+  const done = () => { if (busy.get(node) === t) busy.delete(node); };
+  Promise.resolve(dispatch(node.getAttribute('data-action'), node, event)).then(done, done);
 }
 
 function onFormEvent(event) {
@@ -210,7 +234,10 @@ async function renderActive(preserveScroll) {
   if (!contentEl || !feature) return;
 
   const seq = ++renderSeq;
-  const scrollY = preserveScroll ? window.scrollY : 0;
+  // The page scrolls inside the content area, not the window (the body is one viewport tall),
+  // so that is the position to keep. Keeping window.scrollY kept nothing: emptying the content
+  // below sent every refresh — a readiness tap, a logged set, the theme — back to the top.
+  const scrollY = preserveScroll ? contentEl.scrollTop : 0;
 
   contentEl.setAttribute('aria-busy', 'true');
   contentEl.dataset.tab = activeId;
@@ -218,17 +245,25 @@ async function renderActive(preserveScroll) {
 
   try {
     await feature.render(contentEl);
-    if (seq !== renderSeq) return;   // a newer render won
+    if (seq !== renderSeq) {
+      // A newer render started meanwhile. Features draw straight into the content area, so
+      // when this slower one finishes last it has drawn over the newer one — Week under Today's
+      // highlight, with buttons nothing answers. If the newer one has drawn already, redraw it.
+      if (drawnSeq === renderSeq) return renderActive(true);
+      return;
+    }
+    drawnSeq = seq;
   } catch (err) {
     if (seq !== renderSeq) return;
+    drawnSeq = seq;
     console.error(`Daybreak Router: "${activeId}" failed to render.`, err);
     showRenderError(feature, err);
   } finally {
     if (seq === renderSeq) contentEl.setAttribute('aria-busy', 'false');
   }
 
-  if (preserveScroll) window.scrollTo(0, scrollY);
-  else window.scrollTo(0, 0);
+  contentEl.scrollTop = scrollY;
+  if (!preserveScroll) window.scrollTo(0, 0);
 
   if (feature.title) document.title = `Daybreak — ${feature.title}`;
 }

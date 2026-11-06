@@ -249,7 +249,7 @@ export function reportHtml(report) {
         // "30 → 30 lb (+5%)" reads like a bug. When the load held and the reps moved, say that.
         '<span class="mover-change num">' +
           (m.toWeight === m.fromWeight
-            ? fmt.num(m.toWeight) + ' lb · ' + m.fromReps + ' → ' + m.toReps + ' reps'
+            ? fmt.num(m.toWeight) + ' lb · ' + esc(m.fromReps) + ' → ' + esc(m.toReps) + ' reps'
             : fmt.num(m.fromWeight) + ' → ' + fmt.num(m.toWeight) + ' lb' +
               (m.pctGain ? ' <em>(+' + fmt.pct(m.pctGain) + ')</em>' : '')) +
         '</span></li>').join('') + '</ul>'

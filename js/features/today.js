@@ -353,7 +353,10 @@ export async function render(el) {
 
   const weekStart = mondayOf(today);
   const classes = await DB.getAll('classes');
-  const week = buildWeek(profile, classesForWeek(classes || [], weekStart), dials, weekStart);
+  // Her "Move it" choices, as on Week. Without them Today still offered the session on the day
+  // it had been moved away from.
+  const overrides = (await DB.getPref('session:overrides', {})) || {};
+  const week = buildWeek(profile, classesForWeek(classes || [], weekStart), dials, weekStart, { overrides });
 
   const weekEnd = week[6].date;
   const sessions = await DB.getSessionsInRange(weekStart, weekEnd);
@@ -450,7 +453,13 @@ export const actions = {
     const text = 'Book on Bay Club Connect:\n' + lines.join('\n');
 
     if (navigator.share) {
-      try { await navigator.share({ title: 'Classes to book', text }); return; } catch (_) { /* cancelled */ }
+      try {
+        await navigator.share({ title: 'Classes to book', text });
+        return;
+      } catch (err) {
+        // She closed the share sheet. Falling through opened Messages with the list anyway.
+        if (err && err.name === 'AbortError') return;
+      }
     }
     try {
       await navigator.clipboard.writeText(text);

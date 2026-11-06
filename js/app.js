@@ -142,7 +142,24 @@ async function boot() {
     return;
   }
 
+  watchDayChange();
   registerServiceWorker();
+}
+
+// A Home Screen app is resumed, not relaunched. Opened the next morning it still showed
+// yesterday, and yesterday's unfinished workout as "in progress" — so her new sets went into
+// it. When the day has turned, pick the new day up and redraw. A workout started in the last
+// few hours (one going on across midnight) is left as it is.
+function watchDayChange() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !Router.current()) return;
+    if (DB.todayISO() === Store.get('today')) return;
+    const open = Store.get('activeSession');
+    if (open && !open.complete && Date.now() - new Date(open.startedAt).getTime() < 3 * 3600 * 1000) return;
+    Store.reloadActiveSession()
+      .then(() => Router.refresh())
+      .catch((err) => console.error('Daybreak: could not move on to the new day.', err));
+  });
 }
 
 if (document.readyState === 'loading') {

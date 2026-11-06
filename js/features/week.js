@@ -152,7 +152,8 @@ function warningStrip(w, weekStart) {
         '<p class="warn-text">' + esc(w.message) + '</p>' + noRoom +
         '<div class="warn-actions">' + fixBtn +
           '<button type="button" class="link-quiet" data-action="dismiss-warn" ' +
-            'data-code="' + esc(w.code) + '" data-week="' + esc(weekStart) + '">Dismiss</button>' +
+            'data-code="' + esc(w.code) + '" data-week="' + esc(weekStart) + '" ' +
+            'data-day="' + esc(w.dayIndex) + '">Dismiss</button>' +
         '</div>' +
       '</div>' +
     '</div>'
@@ -372,7 +373,10 @@ export async function render(el) {
   for (const d of week) d.done = (sessions || []).some((s) => s.date === d.date && s.complete);
 
   const dismissed = (await DB.getPref('warn:dismissed', [])) || [];
-  const conflicts = detectConflicts(week).filter((w) => !dismissed.includes(w.code));
+  // Keyed the way 'dismiss-warn' stores it. Matching the bare code never matched, so Dismiss
+  // did nothing.
+  const conflicts = detectConflicts(week)
+    .filter((w) => !dismissed.includes(weekStart + '|' + w.code + '|' + w.dayIndex));
 
   // Rank the real schedule against what she is missing, so the picker can say why.
   const done = (sessions || []).filter((s) => s.complete);
@@ -723,7 +727,7 @@ export const actions = {
   },
 
   async 'dismiss-warn'(node) {
-    const key = node.dataset.week + '|' + node.dataset.code;
+    const key = node.dataset.week + '|' + node.dataset.code + '|' + node.dataset.day;
     const list = (await DB.getPref('warn:dismissed', [])) || [];
     if (!list.includes(key)) list.push(key);
     await DB.setPref('warn:dismissed', list);
@@ -736,7 +740,9 @@ export const actions = {
     const today = DB.todayISO();
     const weekStart = shiftDays(mondayOf(today), weekOffset * 7);
     const classes = (await DB.getAll('classes')) || [];
-    const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart);
+    // With her moves, as the rows she tapped were drawn — without them a moved day showed the old plan.
+    const overrides = (await DB.getPref('session:overrides', {})) || {};
+    const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart, { overrides });
     const day = week[parseInt(node.dataset.index, 10)];
     if (!day) return;
 
@@ -757,6 +763,7 @@ export const actions = {
         'add-class-here'(n) {
           // Jump straight to that day in the real schedule rather than a blank form.
           pickerDay = parseInt(n.dataset.dow, 10);
+          pickerDate = null;   // a weekly pick; a date left by the calendar made it a one-off there
           openPicker();
         },
       },

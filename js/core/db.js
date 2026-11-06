@@ -67,6 +67,41 @@ function errOf(source, fallbackMessage) {
   return e instanceof Error || (e && e.name) ? e : new Error(fallbackMessage);
 }
 
+/*
+ * Progress photos are Blobs, and JSON.stringify writes a Blob as {}. So a backup held no
+ * photos, and restoring it on the same phone put {} over each photo, which then stopped the
+ * Shape screen drawing at all. A backup carries them as data: URLs instead.
+ */
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Daybreak DB: could not read a photo.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dataURLToBlob(url) {
+  const m = /^data:([^;,]*)(;base64)?,(.*)$/.exec(String(url));
+  if (!m) return null;
+  try {
+    const bin = m[2] ? atob(m[3]) : decodeURIComponent(m[3]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: m[1] || 'application/octet-stream' });
+  } catch (_) {
+    return null;
+  }
+}
+
+/** A restored measurement with its photo back as a Blob, or null when the photo cannot come back. */
+function restorePhoto(row) {
+  if (!row.photo || (typeof Blob !== 'undefined' && row.photo instanceof Blob)) return row;
+  const blob = typeof row.photo === 'string' ? dataURLToBlob(row.photo) : null;
+  // An older backup holds {} here. Skipping the row keeps the photo already on this phone.
+  return blob ? Object.assign({}, row, { photo: blob }) : null;
+}
+
 /* ------------------------------------------------------------------ *
  * Connection
  * ------------------------------------------------------------------ */
@@ -125,12 +160,29 @@ function openDB() {
   return dbPromise;
 }
 
+/** iOS can close the connection while the app sits in the background; the next call then fails. */
+function connectionLost(err) {
+  if (!err) return false;
+  if (err.name === 'InvalidStateError' || err.name === 'UnknownError') return true;
+  return /closing|closed|connection|lost/i.test(String(err.message || ''));
+}
+
 /**
  * Run `work(store, setResult)` inside one transaction.
  * Resolves on transaction completion (durable), rejects with the real error.
+ * A connection the phone closed is reopened and the work tried once more (every write here is a
+ * put, delete or clear, so running it twice is safe) — a ticked set must not be silently lost.
  */
-function run(storeName, mode, work) {
+function run(storeName, mode, work, retried) {
   assertStore(storeName);
+  return attempt(storeName, mode, work).catch((err) => {
+    if (retried || !connectionLost(err)) throw err;
+    dbPromise = null;
+    return run(storeName, mode, work, true);
+  });
+}
+
+function attempt(storeName, mode, work) {
   return openDB().then((db) => new Promise((resolve, reject) => {
     let tx;
     try {
@@ -428,7 +480,7 @@ export const DB = {
   exportAll() {
     return openDB()
       .then(() => Promise.all(STORE_NAMES.map((name) => this.getAll(name))))
-      .then((results) => {
+      .then(async (results) => {
         const out = {
           app: 'Daybreak',
           schemaVersion: SCHEMA_VERSION,
@@ -436,6 +488,12 @@ export const DB = {
           exportedAt: new Date().toISOString()
         };
         STORE_NAMES.forEach((name, i) => { out[name] = results[i] || []; });
+        // Read after the transactions above have finished, never inside one.
+        out.measurements = await Promise.all(out.measurements.map(async (m) => (
+          m && typeof Blob !== 'undefined' && m.photo instanceof Blob
+            ? Object.assign({}, m, { photo: await blobToDataURL(m.photo) })
+            : m
+        )));
         return out;
       });
   },
@@ -458,7 +516,8 @@ export const DB = {
         if (Array.isArray(raw)) rows = raw;
         else if (raw && typeof raw === 'object') rows = [raw];   // tolerate a bare profile object
         else { if (raw !== undefined) summary.skipped.push(name); continue; }
-        const clean = rows.filter((r) => r && typeof r === 'object');
+        let clean = rows.filter((r) => r && typeof r === 'object');
+        if (name === 'measurements') clean = clean.map(restorePhoto).filter(Boolean);
         if (clean.length === 0) { summary.imported[name] = 0; continue; }
         if (name === 'profile') clean.forEach((r) => { r.id = 'me'; });
         chain = chain

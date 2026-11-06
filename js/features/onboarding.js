@@ -217,7 +217,14 @@ function paint() {
     try { focusable.focus({ preventScroll: true }); } catch (_) { /* older Safari */ }
   }
   rootEl.scrollTop = 0;
+  paintedAt = Date.now();
 }
+
+// A double tap answered two questions: Continue sits in the same place on every step, so the
+// second tap landed on the step the first one had just drawn and skipped it — the life-stage
+// question included. A tap on a step that has only just appeared is ignored.
+let paintedAt = 0;
+let finishing = false;     // and a double tap on the last answer must not start the app twice
 
 function advance() {
   if (step < TOTAL - 1) {
@@ -229,6 +236,8 @@ function advance() {
 }
 
 async function finish() {
+  if (finishing) return;
+  finishing = true;
   const profile = {
     id: 'me',
     name: draft.name.trim() || 'Friend',
@@ -261,6 +270,7 @@ async function finish() {
   } catch (err) {
     console.error('Daybreak: could not save the profile.', err);
     toast('Could not save that. Try again?', 'signal');
+    finishing = false;
   }
 }
 
@@ -314,6 +324,7 @@ function onEvent(e) {
   if (isControl && e.type === 'click') return;   // let input/change drive form controls
   if (!isControl && e.type !== 'click') return;
   if (node.disabled) return;
+  if (!isControl && Date.now() - paintedAt < 350) return;   // the second tap of a double tap
   fn(node, node.dataset);
 }
 
@@ -326,6 +337,7 @@ export function renderOnboarding(el, done) {
   onComplete = typeof done === 'function' ? done : null;
   draft = freshDraft();
   step = 0;
+  finishing = false;
   heightFt = null;
   heightIn = null;
 

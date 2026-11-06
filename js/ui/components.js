@@ -370,6 +370,8 @@ let sheetSeq = 0;
 let activeSheet = null;        // { layer, panel, actions, onClose, restoreFocus, closing }
 let scrollLock = null;         // { y, bodyStyle:{...} }
 let hiddenSiblings = [];       // background nodes we set aria-hidden on
+const sheetBusy = new WeakMap(); // sheet button -> when its still-running action started
+let finishClosing = null;      // clean-up of a sheet still sliding away
 
 function prefersReducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -499,10 +501,16 @@ function onSheetClick(event) {
   let handled = false;
   if (typeof handler === 'function') {
     handled = true;
+    // One tap, one action, as in the Router: a double tap on Save saved two measurements.
+    const started = sheetBusy.get(node);
+    if (started && Date.now() - started < 3000) return;
+    const t = Date.now();
+    const done = () => { if (sheetBusy.get(node) === t) sheetBusy.delete(node); };
     try {
       const result = handler(node, node.dataset);
       if (result && typeof result.catch === 'function') {
-        result.catch((err) => console.error(`Daybreak: sheet action "${action}" failed`, err));
+        sheetBusy.set(node, t);
+        result.catch((err) => console.error(`Daybreak: sheet action "${action}" failed`, err)).then(done);
       }
     } catch (err) {
       console.error(`Daybreak: sheet action "${action}" failed`, err);
@@ -534,6 +542,9 @@ function onBackdropClick() {
  */
 export function sheet(titleText, bodyHTML, opts = {}) {
   if (activeSheet) closeSheet(true);
+  // A sheet still sliding away is cleaned up now. Its clean-up used to run later, under this
+  // one: it unlocked the page behind it, and left the app hidden from VoiceOver for good.
+  if (finishClosing) finishClosing();
 
   const titleId = `daybreak-sheet-title-${++sheetSeq}`;
   const layer = document.createElement('div');
@@ -617,9 +628,11 @@ export function closeSheet(immediate) {
   const once = () => {
     if (done) return;
     done = true;
+    if (finishClosing === once) finishClosing = null;
     panel.removeEventListener('transitionend', once);
     finish();
   };
+  finishClosing = once;
   panel.addEventListener('transitionend', once);
   setTimeout(once, 320);
 }

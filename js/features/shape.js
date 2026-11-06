@@ -239,7 +239,8 @@ function measureSection(list) {
     body:
       '<div class="measure-hero">' +
         '<span class="measure-hero-label">Waist to hip</span>' +
-        '<span class="measure-hero-value num">' + (whr != null ? fmt.num(whr) : '—') + '</span>' +
+        // Two places, as in the report: fmt.num keeps one, and 0.76 read as 0.8.
+        '<span class="measure-hero-value num">' + (whr != null ? whr.toFixed(2) : '—') + '</span>' +
         (back14 ? deltaChip(whr, whrOf(back14), true, true) : '') +
         '<span class="measure-hero-note">The number that matters.</span>' +
       '</div>' +
@@ -469,7 +470,8 @@ export async function render(el) {
   }
   const shape = weeklyShapeMap(done, sets, classes, dials);
   const pill = weeklyPillars(done, sets, byId, classById, dials);
-  const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart);
+  const overrides = (await DB.getPref('session:overrides', {})) || {};   // "Move it", as on Week
+  const week = buildWeek(profile, classesForWeek(classes, weekStart), dials, weekStart, { overrides });
   // todayISO: without it the engine used the UTC date — tomorrow, after 4–5 pm in California.
   const recs = recommendations({ profile, dials, week, pillars: pill, shape, classes, sessions, todayISO: DB.todayISO() });
 
@@ -494,7 +496,9 @@ export async function render(el) {
       inbodySection(measurements) +
       pillarSection(pill) +
       recsSection(recs) +
-      measureSection(measurements) +
+      // Tape measurements only. A photo or an InBody scan is a record here too, and as the newest
+      // one it blanked waist-to-hip and every row.
+      measureSection(measurements.filter((m) => !m.photo && m.source !== 'inbody')) +
       strengthHtml +
       photoSection(photos) +
       card({

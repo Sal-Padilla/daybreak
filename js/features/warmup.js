@@ -167,6 +167,7 @@ export function renderWarmup(el, plan, onDone) {
   let paused = false;
   let ticker = null;
   let current = plan;
+  let movedAt = 0;          // when it last moved to another movement
 
   function elapsedBefore(i) {
     return current.items.slice(0, i).reduce((s, it) => s + it.seconds, 0);
@@ -223,6 +224,9 @@ export function renderWarmup(el, plan, onDone) {
   }
 
   function tick() {
+    // She left for another tab: `el` is the shared content area, so painting now would cover
+    // that tab with the warm-up every second (and finishing it would start a session).
+    if (!el.querySelector('.warmup')) { teardown(); return; }
     if (paused) return;
     remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
     if (remaining <= 0) {
@@ -237,6 +241,7 @@ export function renderWarmup(el, plan, onDone) {
     index = i;
     remaining = current.items[index].seconds;
     deadline = Date.now() + remaining * 1000;
+    movedAt = Date.now();
     paint();
   }
 
@@ -259,7 +264,9 @@ export function renderWarmup(el, plan, onDone) {
     const node = e.target.closest('[data-action]');
     if (!node || !el.contains(node)) return;
     const action = node.getAttribute('data-action');
-    if (action === 'wu-next') { next(); }
+    // Next sits in the same place on every move, so the second tap of a double tap (or a tap
+    // just as the clock ran out and moved on by itself) skipped the next move unseen.
+    if (action === 'wu-next') { if (Date.now() - movedAt >= 400) next(); }
     else if (action === 'wu-skip') { finish(); }
     else if (action === 'wu-pause') {
       paused = !paused;
