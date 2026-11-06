@@ -62,6 +62,14 @@ function heightLabel(inches) {
   return Math.floor(inches / 12) + '′ ' + Math.round(inches % 12) + '″';
 }
 
+/** '2026-09-11' -> 'Sep 11, 2026', as a local date. It used to show the raw '2026-09-11'. */
+function sinceLabel(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  if (!m) return '—';
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    .toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 // -------------------------------------------------------------------- render
 
 export async function render(el) {
@@ -75,8 +83,11 @@ export async function render(el) {
   const lastBackup = await DB.getPref('backup:at', null);
   const demo = await isDemoData();
 
-  const backupDays = lastBackup
-    ? Math.floor((Date.now() - new Date(lastBackup).getTime()) / 86400000)
+  // Calendar days, so last night's backup is "1 day ago" and this morning's is "today".
+  const dayOf = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const backedUp = lastBackup ? new Date(lastBackup) : null;
+  const backupDays = backedUp && Number.isFinite(backedUp.getTime())
+    ? Math.round((dayOf(new Date()) - dayOf(backedUp)) / 86400000)
     : null;
   const backupOverdue = backupDays === null || backupDays >= 14;
 
@@ -88,7 +99,7 @@ export async function render(el) {
     '<div class="me">' +
       '<header class="page-head">' +
         '<h1 class="display">' + esc(profile.name) + '</h1>' +
-        '<p class="page-sub">Since ' + esc(profile.startedOn || '—') + '</p>' +
+        '<p class="page-sub">Since ' + esc(sinceLabel(profile.startedOn)) + '</p>' +
       '</header>' +
 
       card({
@@ -179,7 +190,8 @@ export async function render(el) {
           'uploaded — not your measurements, not your photos, not your answers.</p>' +
           '<p class="' + (backupOverdue ? 'lede' : 'muted') + '">' +
             (lastBackup
-              ? 'Last backed up ' + backupDays + ' day' + (backupDays === 1 ? '' : 's') + ' ago.' +
+              ? (backupDays === 0 ? 'Last backed up today.'
+                : 'Last backed up ' + backupDays + ' day' + (backupDays === 1 ? '' : 's') + ' ago.') +
                 (backupOverdue ? ' Worth doing another — phones lose data.' : '')
               : 'Never backed up. Phone browsers do quietly clear storage, so export a copy now and then.') +
           '</p>',

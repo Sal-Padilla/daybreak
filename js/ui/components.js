@@ -526,6 +526,9 @@ function onSheetClick(event) {
 }
 
 function onBackdropClick() {
+  // The second tap of a double tap on the button that opened the sheet lands here, on the
+  // backdrop, and closed the sheet before she saw it. A sheet that has only just opened stays.
+  if (activeSheet && Date.now() - activeSheet.openedAt < 400) return;
   if (activeSheet && activeSheet.dismissible !== false) closeSheet();
 }
 
@@ -579,7 +582,8 @@ export function sheet(titleText, bodyHTML, opts = {}) {
     onClose: typeof opts.onClose === 'function' ? opts.onClose : null,
     dismissible: opts.dismissible,
     restoreFocus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
-    closing: false
+    closing: false,
+    openedAt: Date.now()
   };
 
   layer.addEventListener('click', onSheetClick);

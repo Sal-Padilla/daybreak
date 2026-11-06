@@ -211,11 +211,15 @@ export function sheet({ title = '', body = '', actions = {}, large = false, righ
     running.add(node);
     return Promise.resolve(r).finally(() => running.delete(node));
   };
+  // The second tap of a double tap on the button that opened the sheet lands on the dimmed
+  // backdrop and closed the sheet before she saw it. A sheet that has only just opened stays.
+  const openedAt = Date.now();
   layer.addEventListener('click', async (e) => {
     if (!openSheet || openSheet.layer !== layer) return;
     const s = e.target.closest('[data-sheet]');
     if (s) {
       const name = s.dataset.sheet;
+      if (name === 'close' && s.classList.contains('sheet-dim') && Date.now() - openedAt < 400) return;
       if (name === 'close') { closeSheet(); return; }
       if (actions[name]) { await run(s, () => actions[name](s, s.dataset, handle)); return; }
     }
@@ -318,9 +322,12 @@ export function actionSheet(title, options) {
       '</div>';
     document.body.appendChild(layer);
     requestAnimationFrame(() => layer.classList.add('is-open'));
+    const openedAt = Date.now();
     layer.addEventListener('click', (e) => {
       const b = e.target.closest('[data-v]');
       if (!b) return;
+      // A double tap's second tap on the backdrop, as in sheet(): it cancelled the sheet unseen.
+      if (b.classList.contains('sheet-dim') && Date.now() - openedAt < 400) return;
       layer.classList.remove('is-open');
       setTimeout(() => layer.remove(), 300);
       resolve(b.dataset.v || null);

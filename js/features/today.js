@@ -1,7 +1,7 @@
 // Daybreak — js/features/today.js — the 5:25 AM screen. One question: what am I doing right now?
 
 import { DB } from '../core/db.js';
-import { Store, currentProgramWeek } from '../core/store.js';
+import { Store } from '../core/store.js';
 import { Router } from '../core/router.js';
 import { buildWeek } from '../engine/scheduler.js';
 import { weeklyShapeMap } from '../engine/shapemap.js';
@@ -68,7 +68,7 @@ function endTime(hhmm, minutes) {
 
 // ---------------------------------------------------------------- hero card
 
-function heroCard(profile, day, plan, hasOpenSession) {
+function heroCard(profile, day, plan, hasOpenSession, done) {
   if (hasOpenSession) {
     return card({
       tone: 'accent',
@@ -76,6 +76,17 @@ function heroCard(profile, day, plan, hasOpenSession) {
       subtitle: plan && plan.name ? plan.name : '',
       body: '<p class="lede">You left one open. Pick up where you stopped.</p>',
       footer: btn({ label: 'Resume session', action: 'go-train', variant: 'primary', size: 'lg', full: true }),
+    });
+  }
+
+  if (day && day.className && !day.session && done && done.classLogged) {
+    // Logged already: "I went" stayed on screen, and a second tap logged the class twice.
+    return card({
+      tone: 'win',
+      title: day.className,
+      subtitle: clockLabel(day.classStart) + ' · class',
+      body: '<p class="lede">Logged. That counts toward your week.</p>',
+      footer: btn({ label: 'See the Shape Map', action: 'go-shape', variant: 'ghost', size: 'md', full: true }),
     });
   }
 
@@ -110,6 +121,17 @@ function heroCard(profile, day, plan, hasOpenSession) {
   }
 
   const s = day.session;
+  if (done && done.session) {
+    // Finished already. It used to offer "Start warm-up" again, and a second session with it.
+    return card({
+      tone: 'win',
+      title: 'Done for today',
+      subtitle: s.name,
+      body: '<p class="lede">Logged. Rest is when it lands.</p>',
+      footer: btn({ label: 'See the Shape Map', action: 'go-shape', variant: 'ghost', size: 'md', full: true }),
+    });
+  }
+
   const isStack = day.dayType === 'stack' && day.className;
   const count = plan ? plan.items.length : 0;
 
@@ -270,12 +292,8 @@ function noteCard(profile, day, plan, dials) {
     if (breath) notes.push(lead.exercise.name + ': ' + breath);
   }
 
-  const pw = currentProgramWeek(profile);
-  if (dials && dials.deloadEveryWeeks && pw) {
-    const left = dials.deloadEveryWeeks - (pw % dials.deloadEveryWeeks || dials.deloadEveryWeeks);
-    if (left === 0) notes.push('This is a deload week. Same movements, about 60% of the load. It is part of the plan, not a break from it.');
-    else if (left === 1) notes.push('Deload week starts next week. Push a little now.');
-  }
+  // No deload note: nothing schedules a lighter week, so "about 60% of the load" was a promise
+  // the targets did not keep — and sets logged lighter on its word pulled next week's down.
 
   if (!day || !day.session) {
     notes.push('Rest is not the absence of training. It is when the adaptation actually happens.');
@@ -305,8 +323,8 @@ function noteCard(profile, day, plan, dials) {
  * message she can send herself. She opens this app every training morning, so in practice
  * the reminder lands days before the class fills.
  *
- * A local notification is offered too, but only as a bonus and only if she grants it —
- * see 'book-remind' below.
+ * There used to be a "Remind me on this phone" button as well. It asked for notification
+ * permission and promised a nudge, but nothing ever sent one — this card is the reminder.
  */
 function bookingCard(due, todayISO) {
   if (!due.length) return '';
@@ -338,8 +356,6 @@ function bookingCard(due, todayISO) {
     body: '<ul class="book-list">' + rows + '</ul>',
     footer:
       btn({ label: 'Send myself the list', action: 'book-share', variant: 'primary',
-            size: 'md', full: true }) +
-      btn({ label: 'Remind me on this phone', action: 'book-remind', variant: 'ghost',
             size: 'md', full: true }),
   });
 }
@@ -385,6 +401,14 @@ export async function render(el) {
   const open = Store.get('activeSession');
   const hasOpen = !!(open && !open.complete);
 
+  // What is already done today, so the hero does not offer it a second time.
+  const doneToday = completed.filter((s) => s.date === today);
+  const done = {
+    session: !!(day && day.session) && doneToday.some((s) => s.type !== 'class'),
+    classLogged: !!(day && day.className) && doneToday.some((s) => s.type === 'class' &&
+      (day.classId ? s.classId === day.classId : s.classFormatId === day.classFormatId)),
+  };
+
   const proteinHit = await DB.getPref('protein:' + today, null);
 
   // Classes needing a Bay Club Connect booking in the next three days.
@@ -397,9 +421,9 @@ export async function render(el) {
         '<h1 class="today-greeting display">' + esc(greeting(profile.name)) + '</h1>' +
         '<p class="today-date">' + esc(longDate(today)) + '</p>' +
       '</header>' +
-      heroCard(profile, day, plan, hasOpen) +
+      heroCard(profile, day, plan, hasOpen, done) +
       installHtml +
-      (day && day.session && !hasOpen ? readinessCard() : '') +
+      (day && day.session && !hasOpen && !done.session ? readinessCard() : '') +
       noteCard(profile, day, plan, dials) +
       bookingCard(dueToBook, today) +
       weekStrip(week, shape) +
@@ -468,34 +492,6 @@ export const actions = {
       window.location.href = 'sms:?body=' + encodeURIComponent(text);
     }
   },
-
-  // A local notification, scheduled only while the app is open. This is deliberately
-  // modest: without a server there is no push, and a setTimeout dies when the tab is
-  // discarded. So it is offered as "while this stays open", never as a promise.
-  async 'book-remind'() {
-    if (!('Notification' in window)) {
-      toast('This browser cannot show reminders. The list above is the reliable one.', 'signal');
-      return;
-    }
-    let perm = Notification.permission;
-    if (perm === 'default') {
-      try { perm = await Notification.requestPermission(); } catch (_) { perm = 'denied'; }
-    }
-    if (perm !== 'granted') {
-      toast('Reminders are blocked for this site. You can turn them on in browser settings.', 'signal');
-      return;
-    }
-    await DB.setPref('notify:booking', true);
-    try {
-      new Notification('Daybreak', {
-        body: 'I will remind you here when a class needs booking.',
-        tag: 'daybreak-booking',
-      });
-    } catch (_) { /* some browsers require a service worker registration */ }
-    toast('On. You will get a nudge when you open the app with something to book.', 'calm');
-    return Router.refresh();
-  },
-
 
   'go-train': () => Router.go('train'),
   'go-shape': () => Router.go('shape'),

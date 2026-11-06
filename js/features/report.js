@@ -264,10 +264,11 @@ export function reportHtml(report) {
       if (dv != null && Math.abs(dv) >= 0.005) {
         const good = invert ? dv < 0 : dv > 0;
         deltaHtml = '<span class="delta ' + (good ? 'delta-good' : 'delta-bad') + '">' +
-          (dv > 0 ? '▲ ' : '▼ ') + fmt.num(Math.abs(dv)) + '</span>';
+          (dv > 0 ? '▲ ' : '▼ ') + esc(Math.abs(dv)) + '</span>';   // hundredths: 0.25, not 0.3
       }
       return '<div class="measure-row"><span class="measure-label">' + esc(label) + '</span>' +
-        '<span class="measure-value num">' + fmt.num(value) + '</span>' + deltaHtml + '</div>';
+        // Quarter inches stay quarter inches: fmt.num keeps one decimal, so 40.25 read 40.3.
+        '<span class="measure-value num">' + esc(Math.round(value * 100) / 100) + '</span>' + deltaHtml + '</div>';
     };
 
     bodyBlock =
@@ -382,8 +383,8 @@ export function reportText(r) {
 
   if (r.body) {
     L.push('MEASUREMENTS');
-    if (r.body.waistIn != null) L.push('  Waist       ' + fmt.num(r.body.waistIn) + '"');
-    if (r.body.hipIn != null) L.push('  Hips        ' + fmt.num(r.body.hipIn) + '"');
+    if (r.body.waistIn != null) L.push('  Waist       ' + Math.round(r.body.waistIn * 100) / 100 + '"');
+    if (r.body.hipIn != null) L.push('  Hips        ' + Math.round(r.body.hipIn * 100) / 100 + '"');
     // Two places: fmt.num keeps one, and 0.78 would read as 0.8.
     if (r.body.whr != null) L.push('  Waist:Hip   ' + r.body.whr.toFixed(2) + '   <- the one that matters');
     if (r.body.weightLb != null) L.push('  Weight      ' + fmt.num(r.body.weightLb) + ' lb');

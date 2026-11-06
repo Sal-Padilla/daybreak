@@ -407,7 +407,7 @@ const TRANSITION_3DAY = {
   name: 'Transition — 3 Day',
   weeks: 6,
   forExperience: ['returning', 'experienced'],
-  description: 'Three lift days a week: glutes, shoulder cap and back, then heavy quads with impact for bone. Built to run indefinitely with a deload every fifth or sixth week.',
+  description: 'Three lift days a week: glutes, shoulder cap and back, then heavy quads with impact for bone. Built to run indefinitely.',
 
   days: [
     /* ---- Lower A — glute-dominant --------------------------------------- */

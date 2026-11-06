@@ -75,11 +75,19 @@ async function startTabs() {
   });
   // A Home Screen app is resumed, not relaunched: opened the next morning it still showed
   // yesterday — yesterday's date, "You did it!" and no Start button. When the day has turned,
-  // redraw. Not under an open workout, which keeps the session it started with.
+  // redraw. A workout running across midnight (started under three hours ago) keeps going. One
+  // left open in the player since an earlier morning does not — her new sets went into
+  // yesterday's workout — so the player closes and the day reloads (closeEarlierSessions
+  // finishes yesterday's with the sets she logged).
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible' || Nav.isPresenting()) return;
+    if (document.visibilityState !== 'visible') return;
     if (DB.todayISO() === Store.get('today')) return;
-    Store.reloadActiveSession().then(() => Nav.invalidate()).catch((err) => console.error(err));
+    const open = Store.get('activeSession');
+    const stale = !!(open && !open.complete);
+    if (stale && Date.now() - new Date(open.startedAt).getTime() < 3 * 3600 * 1000) return;
+    if (Nav.isPresenting() && !stale) return;
+    const reload = () => Store.reloadActiveSession().then(() => Nav.invalidate());
+    (stale && Nav.isPresenting() ? Nav.dismiss().then(reload) : reload()).catch((err) => console.error(err));
   });
   await Nav.tab('today');
   // A workout left open (app closed mid-session) comes straight back.

@@ -191,7 +191,7 @@ function deltaChip(now, then, invertGood, ratio) {
   if (!d) return '<span class="delta delta-flat">no change</span>';
   const good = invertGood ? d < 0 : d > 0;
   const shown = ratio ? Math.abs(d).toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
-    : fmt.num(Math.abs(d));
+    : String(Math.abs(d));       // d is in hundredths: a quarter inch reads 0.25, not 0.3
   return '<span class="delta ' + (good ? 'delta-good' : 'delta-bad') + '">' +
     (d > 0 ? '▲ ' : '▼ ') + shown + '</span>';
 }
@@ -225,8 +225,9 @@ function measureSection(list) {
     if (latest[key] == null) return '';
     return '<div class="measure-row">' +
       '<span class="measure-label">' + esc(label) + '</span>' +
-      '<span class="measure-value num">' + fmt.num(latest[key]) +
-        (key === 'weightLb' ? ' lb' : '″') + '</span>' +
+      // Quarter inches stay quarter inches: fmt.num keeps one decimal, so 40.25 read 40.3.
+      '<span class="measure-value num">' + (key === 'weightLb' ? fmt.num(latest[key]) + ' lb'
+        : esc(Math.round(latest[key] * 100) / 100) + '″') + '</span>' +
       deltaChip(latest[key], back14 ? back14[key] : null, invertGood) +
     '</div>';
   };
@@ -256,7 +257,7 @@ function measureSection(list) {
         ? '<p class="recomp-line">Waist down, hips up. That is recomposition — losing fat and ' +
           'building shape at once. The scale will never show you this.</p>' : '') +
       (back30 ? '<p class="muted">Compared with 14 days ago. Thirty-day waist change: ' +
-        fmt.num(Math.round((latest.waistIn - back30.waistIn) * 100) / 100) + '″.</p>' : ''),
+        esc(Math.round((latest.waistIn - back30.waistIn) * 100) / 100) + '″.</p>' : ''),
     footer: btn({ label: 'Log measurements', action: 'log-measure', variant: 'ghost', size: 'md', full: true }),
   });
 }

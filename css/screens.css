@@ -789,6 +789,9 @@ button.shape-row:active { background: var(--surface-2); }
 .slot-name { font-size: var(--fs-body); font-weight: 600; line-height: 1.25; }
 .slot-meta { font-size: var(--fs-xs); color: var(--text-dim); }
 .slot-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+/* A warning here is a sentence ("HIIT does not sit well with Glutes & Hamstrings"), and a
+   badge's one-line ellipsis cut it off on every phone. Let it wrap. */
+.slot-badges .badge { white-space: normal; }
 .slot-add {
   flex: 0 0 auto; min-height: 44px; min-width: 56px;
   border: 0; border-radius: var(--r-sm);

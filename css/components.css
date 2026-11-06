@@ -238,7 +238,10 @@
               color .12s var(--ease), transform .1s var(--ease);
 }
 
-.btn > .btn-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Wraps rather than ellipsises: with the text turned up "Build this week’s report" read
+   "Build this wee…", and "Change something" was cut on a 390px phone at the default size.
+   Buttons only have a min-height, so a second line just makes them taller. */
+.btn > .btn-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: normal; }
 .btn > svg { flex: 0 0 auto; width: 20px; height: 20px; }
 
 /* Sizes */
