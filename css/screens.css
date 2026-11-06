@@ -282,7 +282,9 @@ body.is-onboarding .app-content { padding-bottom: 0; }
 
 .session-bar {
   position: sticky;
-  top: 0;
+  /* A sticky box stops at the scroller's padding edge; minus the content's 24px top padding
+     it sits flush under the header, with no strip of scrolling text showing above it. */
+  top: calc(var(--sp-5) * -1);
   z-index: 20;
   display: flex;
   align-items: center;
@@ -399,8 +401,12 @@ body.is-onboarding .app-content { padding-bottom: 0; }
 .rest-clock { font-size: 1.75rem; font-variant-numeric: tabular-nums; color: var(--accent); }
 .rest-track { height: 4px; border-radius: var(--r-full); background: var(--border); overflow: hidden; }
 .rest-fill { display: block; height: 100%; width: 0; background: var(--accent); transition: width 1s linear; }
-.rest-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); }
-.rest-actions .btn { flex: 1 1 0; }
+.rest-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+.rest-actions .btn { flex: 1 1 auto; }
+/* The card (components.css .rest-timer) centres its children, which shrank the 4px track to
+   nothing — the rest never showed progress — and squeezed the buttons to "Ski…". Sized by
+   their labels, the three share a line where they fit and wrap where they do not. */
+.rest-head, .rest-track, .rest-actions { align-self: stretch; }
 .rest-done { margin: 0; font-size: var(--fs-sm); color: var(--calm); }
 
 .pr-list { list-style: none; margin: 0 0 var(--sp-3); padding: 0; font-size: var(--fs-sm); }
@@ -1008,7 +1014,9 @@ button.shape-row:active { background: var(--surface-2); }
    pixels below the fold — the same failure that made onboarding a dead end. */
 .train.is-active .set-row {
   position: sticky;
-  bottom: 0;
+  /* Flush on the nav: at bottom:0 it stopped at the content's padding edge, 32px above the
+     nav, and the links below it showed through that strip half-hidden under the nav. */
+  bottom: calc(var(--sp-6) * -1);
   z-index: 4;
   margin: 0 calc(var(--sp-4) * -1) calc(var(--sp-4) * -1);
   /* The negative margins reach the card's edges so nothing shows past the pinned row. The
@@ -1440,7 +1448,7 @@ button.shape-row:active { background: var(--surface-2); }
 }
 .warmup-foot {
   position: sticky;
-  bottom: 0;
+  bottom: calc(var(--sp-6) * -1);   /* flush on the nav, as the set row */
   background: var(--bg);
   padding-top: var(--sp-2);
   padding-bottom: var(--sp-3);   /* pinned above the nav, which already clears the home indicator */

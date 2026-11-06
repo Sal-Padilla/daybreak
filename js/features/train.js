@@ -510,7 +510,8 @@ function doneView() {
   return '<div class="train">' + card({
     tone: 'win',
     title: 'Done.',
-    subtitle: mmss(s.seconds) + ' · ' + s.sets + ' sets · ' + s.exercises + ' exercises',
+    subtitle: mmss(s.seconds) + ' · ' + s.sets + (s.sets === 1 ? ' set' : ' sets') + ' · ' +
+      s.exercises + (s.exercises === 1 ? ' exercise' : ' exercises'),
     body:
       '<p class="lede">' + esc(s.line) + '</p>' +
       (prs ? '<h3 class="section-label">New best</h3>' + prs : '') +
